@@ -1,0 +1,47 @@
+<html>
+<head>
+<style type="text/css">
+.good {background-color:green;}
+.bad {background-color:red;}
+</style>
+<script type="text/javascript" src="../src/fretfind.js"></script>
+<script type="text/javascript">
+function check(want, got) {
+    var result = 'bad';
+    if (want === got) result = 'good';
+    document.write('<div class="' + result + '">wanted: ' + want + ' got: ' + got + '</div>\n');
+}
+check(5, ff.getPrecision());
+check('(3,4)', new ff.Point(3,4).toString());
+check('(3.12346,4.12346)', new ff.Point(3.123456789, 4.123456789).toString());
+check('(3.12345,4.12345)', new ff.Point(3.123451111, 4.123451111).toString());
+ff.setPrecision(6);
+check(6, ff.getPrecision());
+check('(3.123457,4.123457)', new ff.Point(3.123456789, 4.123456789).toString());
+check('(3.123456,4.123456)', new ff.Point(3.123456111, 4.123456111).toString());
+check('(-1,7)', new ff.Point(3, 4).translate(-4, 3).toString());
+
+check('((1,2):(3,4))', new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).toString());
+check('((0,4):(2,6))', new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).translate(-1,2).toString());
+check(2, new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).rise());
+check(2, new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).run());
+check(2, new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 2)).intercept());
+check(true, isNaN(new ff.Segment(new ff.Point(2, 1), new ff.Point(2, 3)).intercept()));
+check(1, new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).slope());
+check(0.5, new ff.Segment(new ff.Point(1, 1), new ff.Point(5, 3)).slope());
+check(1, new ff.Segment(new ff.Point(1, 2), new ff.Point(3, 4)).intercept());
+check(0.5, new ff.Segment(new ff.Point(1, 1), new ff.Point(5, 3)).intercept());
+check(4, new ff.Segment(new ff.Point(1, 1), new ff.Point(1, 5)).length());
+check(6, new ff.Segment(new ff.Point(1, 1), new ff.Point(1, 5)).distanceToPoint(new ff.Point(7, 10)));
+check(45, new ff.Segment(new ff.Point(1, 1), new ff.Point(2, 2)).angle());
+check(-45, new ff.Segment(new ff.Point(1, 1), new ff.Point(2, 0)).angle());
+check('(3,1)', new ff.Segment(new ff.Point(1, 1), new ff.Point(9, 1)).pointAtRatio(0.25).toString());
+check('(3,1)', new ff.Segment(new ff.Point(1, 1), new ff.Point(9, 1)).pointAtLength(2).toString());
+check('(3,1)', new ff.Segment(new ff.Point(1, 1), new ff.Point(9, 1)).pointAt(2).toString());
+check('((18,2):(10,2))', new ff.Segment(new ff.Point(1, 1), new ff.Point(9, 1)).createParallel(new ff.Point(10, 2)).toString());
+check('(10,1)', new ff.Segment(new ff.Point(1, 1), new ff.Point(9, 1)).intersect(new ff.Segment(new ff.Point(10, 2), new ff.Point(10, 0))).toString());
+</script>
+</head>
+<body>
+</body>
+</html>

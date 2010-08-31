@@ -1,0 +1,43 @@
+Sat Jun 26 22:32:14 GMT 2004
+	Initial Release
+
+Mon Jul  5 02:03:56 GMT 2004
+	Fixed JavaScript syntax error that prevented forms from submiting
+	in Mozilla Firefox. IE allows HTML object collections to be accessed
+	with tuning(i).value; Mozilla requires tuning[i].value .
+
+	Suppressed PHP errors and warnings in fretboard.php and fretfind.php
+	where they are mostlikely to be found because of bad inputs.
+
+Tue Aug  3 01:19:44 GMT 2004
+	Added additional explanation to the "perpendicular distance" section
+	of the non-parallel frontend. Thanks to Lars Renklint for the
+	feedback.
+
+Sat Aug 21 23:26:21 GMT 2004
+	Restructured: a separate fretboard_???.php for each format
+	makes programming much cleaner. Preparing to get rid of the SVGblurb.
+	Perhaps SVG isn't the perfect format though I do love it so!
+
+	Added PDF download with FPDF
+	Added DXF as a visualization choice using the fine DXF Viewer applet
+	Added units for the benifit of SVG and PDF scaling
+
+Sun Aug 22 14:15:33 GMT 2004
+	Changed PNG scaling. PNGs are no longer scaled to 200px by 600px.
+	Now they are rendered at 72dpi optionally a user can specify the dpi
+	as a GET variable. Some work may need to be done on the stroke-width.
+
+Sat Sep 11 16:53:54 GMT 2004
+	Added multipage overlapped PDFs. I think they work quite well for 
+	printing.
+
+	Eric Belcastro reported an unexplained scale parsing error so I
+	rewrote parseScala() in scala.php . The new version is much closer to
+	compliant with the Scala scale file format specification. As an added 
+	bonus it now dies with useful error messages when parsing bad scales.
+
+Sat Sep 11 22:14:38 GMT 2004
+	Fixed the scale parsing error. Hidden input couldn't deal with quotes 
+	in the scale file. Textarea works fine.
+

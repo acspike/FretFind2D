@@ -1,0 +1,45 @@
+<html>
+<head>
+	<title>jsPDF</title>
+	<script type="text/javascript" src="../src/libs/base64.js"></script>
+	<script type="text/javascript" src="../src/libs/sprintf.js"></script>
+	<script type="text/javascript" src="../src/libs/jspdf.js"></script>
+	<script type="text/javascript" src="../src/libs/swfobject.js"></script>
+	<script type="text/javascript" src="../src/libs/downloadify.min.js"></script>	
+</head>
+
+<body onload="load()">
+<h1>jsPDF Downloadify Example</h1>
+
+<p>This is an example of jsPDF using <a href="http://www.downloadify.info/">Downloadify</a>. This works in all major browsers.</p>
+
+<p id="downloadify">
+	You must have Flash 10 installed to download this file.
+</p>
+
+<script type="text/javascript">
+	function load(){
+		Downloadify.create('downloadify',{
+			filename: 'Example.pdf',
+			data: function(){ 
+				var doc = new jsPDF('l','mm', 'letter');
+				doc.text(20, 20, 'PDF Generation using client-side Javascript');
+				doc.line(25,25,50,50).setDrawColor(200).line(30,25,55,50);
+				doc.setDrawColor(255,0,0).line(35,25,60,50).setLineWidth(1);
+				doc.line(40,25,65,50).addPage().text(20, 20, 'Do you like that?');
+				return doc.output();
+			},
+			onComplete: function(){},
+			onCancel: function(){},
+			onError: function(){},
+			swf: '../src/libs/downloadify.swf',
+			downloadImage: '../src/libs/download.png',
+			width: 100,
+			height: 30,
+			transparent: true,
+			append: false
+		});
+	}
+</script>	
+</body>
+</html>
