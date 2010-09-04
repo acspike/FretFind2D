@@ -174,11 +174,11 @@ var ff = (function(){
         if (typeof octave === 'undefined' ) octave = 2;
         var scale = new Scale();
         if (tones === 0) {
-            this.addError('Error: Number of tones must be non zero!');
+            scale.addError('Error: Number of tones must be non zero!');
         } else {
             var ratio = Math.pow(octave,1/tones);
-            this.addStep(ratio,denom);
-            this.title = tones.toString() + ' root of ' + octave.toString() + ' Equal Temperament';
+            scale.addStep(ratio,1);
+            scale.title = tones.toString() + ' root of ' + octave.toString() + ' Equal Temperament';
         }
         return scale;
     }
