@@ -1,0 +1,29 @@
+body {
+    background-color:white;
+    font-family: Arial,sans-serif;
+}
+td {
+    vertical-align: top;
+    }
+#worksheet {
+    width: 600px;
+}
+dt,dd {
+    margin:5px;
+}
+dl.alternative > dd {
+    display: none;
+}
+dl.alternative > dt {
+    display: inline;
+    font-size: 0.8em;
+}
+.selected-alt {
+    text-decoration: underline;
+}
+dd.help {
+    display: none;
+    font-size: 0.8em;
+    border: 2px dashed red;
+    padding: 10px;
+}
