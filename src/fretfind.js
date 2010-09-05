@@ -186,7 +186,7 @@ var ff = (function(){
         // discard comments, lines beginning with !
         var alllines = [];
         var comment = /^!/;
-        for (var i in rawlines) {
+        for (var i=0; i<rawlines.length; i++) {
             var line = strip(rawlines[i]);
             if (!comment.test(line)) {
                 alllines.push(line);
@@ -201,7 +201,7 @@ var ff = (function(){
         
         // discard blank lines and anything following whitespace
         var lines = [];
-        for (var i in alllines) {
+        for (var i=0; i<alllines.length; i++) {
             var line = alllines[i];
             if (line.length > 0) {
                 lines.push(line.split(/\s+/)[0]);
@@ -211,7 +211,7 @@ var ff = (function(){
         if (lines.length !== expected) {
             scale.addError('Error: expected ' + expected.toString() + ' more tones but found ' + lines.length.toString() + '!');
         } else {
-            for (var i in lines) {
+            for (var i=0; i<lines.length; i++) {
                 var l = lines[i];
                 // interpret any line containing a dot as cents
                 // everything else is a ratio
@@ -262,7 +262,7 @@ var ff = (function(){
         }
         meta.push(guitar.edge2.copy());
     
-        for (var i in guitar.strings) {
+        for (var i=0; i<guitar.strings.length; i++) {
             if ((nut.distanceToPoint(guitar.strings[i].end1) > threshold) ||
                 (bridge.distanceToPoint(guitar.strings[i].end2) > threshold)) {
                 doPartials = false;
@@ -383,14 +383,14 @@ var ff = (function(){
         var all = paper.set();
         
         var stringpath = '';
-        for (var i in guitar.strings) {
+        for (var i=0; i<guitar.strings.length; i++) {
             stringpath += guitar.strings[i].toSVGD();
         }
         var strings = paper.path(stringpath).attr(stringstyle);
         all.push(strings);
         
         var metapath = '';
-        for (var i in guitar.meta) {
+        for (var i=0; i<guitar.meta.length; i++) {
             metapath += guitar.meta[i].toSVGD();
         }
         var metas = paper.path(metapath).attr(metastyle);
@@ -403,8 +403,8 @@ var ff = (function(){
         all.push(ends);
         
         var fretpath = '';
-        for (var i in guitar.frets) {
-            for (var j in guitar.frets[i]) {
+        for (var i=0; i<guitar.frets.length; i++) {
+            for (var j=0; j<guitar.frets[i].length; j++) {
                 fretpath += guitar.frets[i][j].fret.toSVGD();
             }
         }
