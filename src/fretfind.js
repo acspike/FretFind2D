@@ -198,12 +198,12 @@ var ff = (function(){
         var lines = [];
         for (var i in alllines) {
             var line = alllines[i];
-            if (line.length() > 0) {
+            if (line.length > 0) {
                 lines.push(line.split(/\s+/)[0]);
             }
         }
         
-        if (lines.length() !== expected) {
+        if (lines.length !== expected) {
             scale.addError('Error: expected ' + expected.toString() + ' more tones but found ' + lines.length().toString() + '!');
         } else {
             for (var i in lines) {
