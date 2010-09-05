@@ -173,7 +173,7 @@ $(document).ready(function() {
     $('#inputStrings').change(function(){ff.setTuning('tuning', 'inputStrings', onChange);});
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'inputStrings', onChange);
-    paper = Raphael('output',200,600);
+    paper = Raphael('output',200,800);
     processChanges = true;
     onChange();
 });
@@ -262,6 +262,7 @@ PDFs are generated with <a href="http://snapshotmedia.co.uk/uncategorized/jspdf"
                         To calculate an appropriate value for any fret,
                         simply divide the distance of the fret from the nut by the total length of the string.
                         In twelve tone equal temperament the values look like this:
+                        </p>
                         <pre>
 Fret	P.D.		Fret	P.D.
 1	0.05613		13	0.52806
@@ -277,7 +278,6 @@ Fret	P.D.		Fret	P.D.
 11	0.47027		23	0.73513
 12	0.50000		24	0.75000
                         </pre>
-                        </p>
                     </dd>
                 </dl>
             </dd>
