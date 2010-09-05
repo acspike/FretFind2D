@@ -24,13 +24,13 @@ var ff = (function(){
 
     // utility functions
     // we use but don't export
-	function roundFloat(fltValue, intDecimal) {
-		return Math.round(fltValue * Math.pow(10, intDecimal)) / Math.pow(10, intDecimal);
-	}
-	// remove whitespace from both ends of a string
-	function strip(str) {
-	    return str.replace(/^\s+|\s+$/g,'');
-	}
+    function roundFloat(fltValue, intDecimal) {
+        return Math.round(fltValue * Math.pow(10, intDecimal)) / Math.pow(10, intDecimal);
+    }
+    // remove whitespace from both ends of a string
+    function strip(str) {
+        return str.replace(/^\s+|\s+$/g,'');
+    }
 
 
     function Point(x,y) {
@@ -38,123 +38,123 @@ var ff = (function(){
         this.y = y;
     }
     Point.prototype.toString = function() {
-		return "(" + roundFloat(this.x, precision) + "," + roundFloat(this.y, precision) + ")";
-	};
-	Point.prototype.translate = function(x, y) {
-		this.x += x;
-		this.y += y;
-		return this;
-	};
-	Point.prototype.copy = function() {
-		return new Point(this.x, this.y);
-	};
-	Point.prototype.equals = function(point) {
-		return this.x === point.x && this.y === point.y;
-	};
+        return "(" + roundFloat(this.x, precision) + "," + roundFloat(this.y, precision) + ")";
+    };
+    Point.prototype.translate = function(x, y) {
+        this.x += x;
+        this.y += y;
+        return this;
+    };
+    Point.prototype.copy = function() {
+        return new Point(this.x, this.y);
+    };
+    Point.prototype.equals = function(point) {
+        return this.x === point.x && this.y === point.y;
+    };
 
 
     function Segment(one, two) {
-	    this.end1 = one;
-	    this.end2 = two;
-    }	
-	Segment.prototype.deltaX = function() {
-		return this.end2.x - this.end1.x;
-	};
-	Segment.prototype.run = Segment.prototype.deltaX;
-	Segment.prototype.deltaY = function() {
-		return this.end2.y - this.end1.y;
-	};
-	Segment.prototype.rise = Segment.prototype.deltaY;
-	Segment.prototype.slope = function() {
-		if (this.deltaX() !== 0) {
-			return this.deltaY() / this.deltaX();
-		}
-		return Number.NaN;
-	};
-	Segment.prototype.intercept = function() {
-		if (this.deltaX() !== 0) {
-			return this.end2.y - (this.end2.x * this.slope());
-		}
-		return Number.NaN;
-	};
-	Segment.prototype.distanceToPoint = function(point) {
-		var len = this.length();
-		if (len === 0) {return Number.NaN;}
-		return Math.abs(((this.end2.x - this.end1.x) * (this.end1.y - point.y)) -
-			((this.end1.x - point.x) * (this.end2.y - this.end1.y))) / len;
-	};
-	Segment.prototype.angle = function() {
-		return (180 / Math.PI) * Math.atan2(this.deltaY(), this.deltaX()); 	
-	};
-	Segment.prototype.length = function() {
-		return Math.sqrt(
-			((this.end2.x - this.end1.x) * (this.end2.x - this.end1.x)) +
-			((this.end2.y - this.end1.y) * (this.end2.y - this.end1.y))
-			);
-	};
-	Segment.prototype.toString = function() {
-		return "(" + this.end1.toString() + ":" + this.end2.toString() + ")";
-	};
-	Segment.prototype.pointAtRatio = function(ratio) {
-		var x = this.end1.x + (ratio * this.deltaX());
-		var y = this.end1.y + (ratio * this.deltaY());
-		return new Point(x, y);
-	};
-	Segment.prototype.pointAtLength = function(len)	{
-		if (this.length() === 0) {return new Point(Number.NaN, Number.NaN);}
-		var ratio = len / this.length();
-		return this.pointAtRatio(ratio);
-	};
+        this.end1 = one;
+        this.end2 = two;
+    }
+    Segment.prototype.deltaX = function() {
+        return this.end2.x - this.end1.x;
+    };
+    Segment.prototype.run = Segment.prototype.deltaX;
+    Segment.prototype.deltaY = function() {
+        return this.end2.y - this.end1.y;
+    };
+    Segment.prototype.rise = Segment.prototype.deltaY;
+    Segment.prototype.slope = function() {
+        if (this.deltaX() !== 0) {
+            return this.deltaY() / this.deltaX();
+        }
+        return Number.NaN;
+    };
+    Segment.prototype.intercept = function() {
+        if (this.deltaX() !== 0) {
+            return this.end2.y - (this.end2.x * this.slope());
+        }
+        return Number.NaN;
+    };
+    Segment.prototype.distanceToPoint = function(point) {
+        var len = this.length();
+        if (len === 0) {return Number.NaN;}
+        return Math.abs(((this.end2.x - this.end1.x) * (this.end1.y - point.y)) -
+            ((this.end1.x - point.x) * (this.end2.y - this.end1.y))) / len;
+    };
+    Segment.prototype.angle = function() {
+        return (180 / Math.PI) * Math.atan2(this.deltaY(), this.deltaX());     
+    };
+    Segment.prototype.length = function() {
+        return Math.sqrt(
+            ((this.end2.x - this.end1.x) * (this.end2.x - this.end1.x)) +
+            ((this.end2.y - this.end1.y) * (this.end2.y - this.end1.y))
+            );
+    };
+    Segment.prototype.toString = function() {
+        return "(" + this.end1.toString() + ":" + this.end2.toString() + ")";
+    };
+    Segment.prototype.pointAtRatio = function(ratio) {
+        var x = this.end1.x + (ratio * this.deltaX());
+        var y = this.end1.y + (ratio * this.deltaY());
+        return new Point(x, y);
+    };
+    Segment.prototype.pointAtLength = function(len)    {
+        if (this.length() === 0) {return new Point(Number.NaN, Number.NaN);}
+        var ratio = len / this.length();
+        return this.pointAtRatio(ratio);
+    };
     Segment.prototype.pointAt = Segment.prototype.pointAtLength;
-	Segment.prototype.createParallel = function(point) {
-		return new Segment(new Point(point.x + this.deltaX(), point.y + this.deltaY()), point.copy());
-	};
-	// intersection of projected ideal line; not constrained by segment endpoints
-	Segment.prototype.intersect = function(line) {
-		var retval = new Point(Number.NaN, Number.NaN);
+    Segment.prototype.createParallel = function(point) {
+        return new Segment(new Point(point.x + this.deltaX(), point.y + this.deltaY()), point.copy());
+    };
+    // intersection of projected ideal line; not constrained by segment endpoints
+    Segment.prototype.intersect = function(line) {
+        var retval = new Point(Number.NaN, Number.NaN);
 
-		var x1 = this.end1.x;
-		var x2 = this.end2.x;
-		var x3 = line.end1.x;
-		var x4 = line.end2.x;
+        var x1 = this.end1.x;
+        var x2 = this.end2.x;
+        var x3 = line.end1.x;
+        var x4 = line.end2.x;
 
-		var y1 = this.end1.y;
-		var y2 = this.end2.y;
-		var y3 = line.end1.y;
-		var y4 = line.end2.y;
+        var y1 = this.end1.y;
+        var y2 = this.end2.y;
+        var y3 = line.end1.y;
+        var y4 = line.end2.y;
 
-		var denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
-		var num1 = ((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3));
-		var num2 = ((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3));
+        var denom = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1));
+        var num1 = ((x4 - x3) * (y1 - y3)) - ((y4 - y3) * (x1 - x3));
+        var num2 = ((x2 - x1) * (y1 - y3)) - ((y2 - y1) * (x1 - x3));
 
-		var num = num1;
+        var num = num1;
 
-		if (denom !== 0) {	
-			x = x1 + ((num / denom) * (x2 - x1));
-			y = y1 + ((num / denom) * (y2 - y1));
-			retval = new Point(x, y);
-		}
-		return retval;
-	};
-	Segment.prototype.translate = function(x, y) {
-		this.end1.translate(x, y);
-		this.end2.translate(x, y);
-		return this;
-	};
-	// equality test allows for flipped swapped endpoints
-	// a number of other equality test might be appropriate 
-	// we'll have to see how it gets used
-	Segment.prototype.equals = function(line) {
-	    return (this.end1.equals(line.end1) && this.end2.equals(line.end2)) || 
-	        (this.end1.equals(line.end2) && this.end2.equals(line.end1));
-	};
-	Segment.prototype.copy = function() {
-	    return new Segment(this.end1.copy(), this.end2.copy());
-	};
-	Segment.prototype.toSVGD = function() {
-	    return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
-	};
-	
+        if (denom !== 0) {
+            x = x1 + ((num / denom) * (x2 - x1));
+            y = y1 + ((num / denom) * (y2 - y1));
+            retval = new Point(x, y);
+        }
+        return retval;
+    };
+    Segment.prototype.translate = function(x, y) {
+        this.end1.translate(x, y);
+        this.end2.translate(x, y);
+        return this;
+    };
+    // equality test allows for flipped swapped endpoints
+    // a number of other equality test might be appropriate 
+    // we'll have to see how it gets used
+    Segment.prototype.equals = function(line) {
+        return (this.end1.equals(line.end1) && this.end2.equals(line.end2)) || 
+            (this.end1.equals(line.end2) && this.end2.equals(line.end1));
+    };
+    Segment.prototype.copy = function() {
+        return new Segment(this.end1.copy(), this.end2.copy());
+    };
+    Segment.prototype.toSVGD = function() {
+        return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
+    };
+    
 
 
     function Scale() {
@@ -250,7 +250,7 @@ var ff = (function(){
     var drawGuitar = function(paper, guitar) {
         var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
         var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
-        var fretstyle =	{stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
+        var fretstyle = {stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
         paper.clear();
         var stringpath = '';
         for (var i=1; i<guitar.strings.length-1; i++) {
@@ -336,7 +336,7 @@ var ff = (function(){
             $(item).children('dt').first().click();
         });
     };
-	
+    
     return {
         //geometry 
         getPrecision: function() {return precision;},
