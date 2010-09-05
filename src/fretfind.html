@@ -134,21 +134,22 @@ var getGuitar = function() {
     var nutStringSpacing = nut.length() / (strings - 1);
     var bridgeStringSpacing = bridge.length() / (strings - 1);
     
-    var lines = [fbf,first];
+    var lines = [first];
     for (var i=1; i<=(strings-2); i++)
     {
 	    var n=nut.pointAt(i * nutStringSpacing);
 	    var b=bridge.pointAt(i * bridgeStringSpacing);
 	    lines.push(new ff.Segment(n, b));
     }
-    lines.push(last)
-    lines.push(fbl);
+    lines.push(last);
     
     return {
         scale: scale,
         tuning: tuning,
         strings: lines,
-        frets: frets,
+        edge1: fbf,
+        edge2: fbl,
+        fret_count: frets,
         units: units
     };
 }
@@ -161,6 +162,7 @@ var processChanges = false;
 var onChange = function() {
     if (processChanges) {
         var guitar = getGuitar();
+        guitar = ff.fretGuitar(guitar);
         ff.drawGuitar(paper, guitar);
     }
 }
@@ -363,20 +365,20 @@ Fret	P.D.		Fret	P.D.
 ! 12tet.scl
 !
 12 tone equal temperament
- 12
+12
 !
- 100.0
- 200.
- 300.
- 400.
- 500.
- 600.
- 700.
- 800.
- 900.
- 1000.
- 1100.
- 2/1
+100.0
+200.
+300.
+400.
+500.
+600.
+700.
+800.
+900.
+1000.
+1100.
+2/1
 </textarea>            
             </dd>
         </dl>

@@ -35,6 +35,9 @@ var ff = (function(){
     Point.prototype.equals = function(point) {
         return this.x === point.x && this.y === point.y;
     };
+    Point.prototype.midway = function(point) {
+        return new Point((point.x + this.x) * 0.5, (point.y + this.y) * 0.5);
+    };
 
 
     function Segment(one, two) {
@@ -84,12 +87,15 @@ var ff = (function(){
         var y = this.end1.y + (ratio * this.deltaY());
         return new Point(x, y);
     };
-    Segment.prototype.pointAtLength = function(len)    {
+    Segment.prototype.pointAtLength = function(len) {
         if (this.length() === 0) {return new Point(Number.NaN, Number.NaN);}
         var ratio = len / this.length();
         return this.pointAtRatio(ratio);
     };
     Segment.prototype.pointAt = Segment.prototype.pointAtLength;
+    Segment.prototype.midpoint = function() {
+        return this.pointAtRatio(0.5);
+    };
     Segment.prototype.createParallel = function(point) {
         return new Segment(new Point(point.x + this.deltaX(), point.y + this.deltaY()), point.copy());
     };
@@ -140,7 +146,6 @@ var ff = (function(){
     };
     
 
-
     function Scale() {
         // initial step 0 or 1/1 is implicit
         this.steps = [[1,1]];
@@ -176,7 +181,7 @@ var ff = (function(){
         var scale = new Scale();
         
         // split lines
-        var rawlines = strip(scala).split(/(\n|\r)+/);
+        var rawlines = strip(scala).split(/[\n\r]+/);
         // strip whitespace from all lines
         // discard comments, lines beginning with !
         var alllines = [];
@@ -204,7 +209,7 @@ var ff = (function(){
         }
         
         if (lines.length !== expected) {
-            scale.addError('Error: expected ' + expected.toString() + ' more tones but found ' + lines.length().toString() + '!');
+            scale.addError('Error: expected ' + expected.toString() + ' more tones but found ' + lines.length.toString() + '!');
         } else {
             for (var i in lines) {
                 var l = lines[i];
@@ -230,28 +235,181 @@ var ff = (function(){
         }
         return scale;
     }
+    
+    //extend guitar object with frets and other calculated information
+    function fretGuitar(guitar) {
+        var threshold = 0.0000000001;
+        //test strings ends are on nut and bridge
+        //if not don't do partials
+        var numStrings = guitar.strings.length;
+        var doPartials = true;
+        var parallelFrets = true;
+        
+        var nut = new Segment(guitar.edge1.end1.copy(), guitar.edge2.end1.copy());
+        var bridge = new Segment(guitar.edge1.end2.copy(), guitar.edge2.end2.copy());
+        var midline = new Segment( nut.midpoint(), bridge.midpoint());
+        
+        //the meta array holds the edge lines and the lines between strings
+        //will be used for calculating the extents of the fretlets
+        var meta = [guitar.edge1.copy()];
+        for (var i=0; i < guitar.strings.length - 1; i++) {
+            meta.push(
+                new Segment(
+                    guitar.strings[i+1].end1.midway(guitar.strings[i].end1), 
+                    guitar.strings[i+1].end2.midway(guitar.strings[i].end2)
+                )
+            );
+        }
+        meta.push(guitar.edge2.copy());
+    
+        for (var i in guitar.strings) {
+            if ((nut.distanceToPoint(guitar.strings[i].end1) > threshold) ||
+                (bridge.distanceToPoint(guitar.strings[i].end2) > threshold)) {
+                doPartials = false;
+                break;
+            }
+        }
+        
+        var denom = ((bridge.end2.y - bridge.end1.y) * (nut.end2.x - nut.end1.x)) -
+                           ((bridge.end2.x - bridge.end1.x) * (nut.end2.y - nut.end1.y));
+        if (denom !== 0) {
+            parallelFrets = false;
+        }
+        //var intersection = nut.intersect(bridge);
+        
+        // an array of fretlets for each string
+        var strings = [];
+        var tones = guitar.scale.steps.length - 1;
+        var totalWidth = [];
+        var scale = guitar.scale.steps;
+        for (var i=0; i<numStrings; i++) {
+            var base = guitar.tuning[i] || 0;
+            var frets = [];
+            frets[0] = {};
+            frets[0].fret = doPartials ? new Segment(meta[i].end1.copy(), meta[i+1].end1.copy()) :
+                                         new Segment(guitar.strings[i].end1.copy(), guitar.strings[i].end1.copy());
+            frets[0].bridgeDist = guitar.strings[i].length();
+            frets[0].nutDist = 0;
+            frets[0].pFretDist = 0;
+            frets[0].width = doPartials ? frets[0].fret.length() : 0;
+            frets[0].angle = doPartials ? frets[0].fret.angle() : Number.NaN;
+            frets[0].intersection = guitar.strings[i].end1;
+            frets[0].midline_intersection = doPartials ? midline.intersect(frets[0].fret) :
+                                                         new Point(Number.NaN, Number.NaN);
+            var temp = new Segment(midline.end2, frets[0].midline_intersection);
+            frets[0].midline_bridgeDist = doPartials ? temp.length() : Number.NaN;
+            frets[0].midline_nutDist = doPartials ? 0 : Number.NaN;
+            frets[0].midline_pFretDist = doPartials ? 0 : Number.NaN;
+            frets[0].totalRatio = 0;
+            
+            totalWidth[0] += frets[0].width;
 
+            for (j=1; j<=guitar.fret_count; j++) {
+                frets[j] = {};
+                var step = ((base + (j-1)) % (tones)) + 1;
+                var ratio = 1 - (
+                    (scale[step][1] * scale[step-1][0]) /
+                    (scale[step][0] * scale[step-1][1])
+                    );
+                var x = frets[j-1].intersection.x +
+                    (ratio * (guitar.strings[i].end2.x - frets[j-1].intersection.x));
+                var y = frets[j-1].intersection.y+
+                    (ratio * (guitar.strings[i].end2.y - frets[j-1].intersection.y));
+                frets[j].intersection = new Point(x, y);	
+                var temp = new Segment(guitar.strings[i].end2, frets[j].intersection);
+                frets[j].bridgeDist = temp.length();
+                temp = new Segment(guitar.strings[i].end1, frets[j].intersection);
+                frets[j].nutDist = temp.length();
+                temp = new Segment(frets[j-1].intersection, frets[j].intersection);
+                frets[j].pFretDist = temp.length();
+                frets[j].totalRatio = frets[j].nutDist / guitar.strings[i].length();
+                
+                if (doPartials) {
+                    //partials depending on outer strings
+                    if (parallelFrets) {
+                        temp = nut.createParallel(frets[j].intersection);
+                    } else {
+                        temp = new Segment(
+                            guitar.strings[0].pointAt(guitar.strings[0].length() *
+                                frets[j].totalRatio),
+                            guitar.strings[numStrings-1].pointAt(guitar.strings[numStrings-1].length() *
+                                frets[j].totalRatio)
+                            );
+                    }
+                    frets[j].fret = new Segment(temp.intersect(meta[i]),
+                            temp.intersect(meta[i+1]));
+                    
+                    
+                    frets[j].width = frets[j].fret.length();
+                    frets[j].angle = frets[j].fret.angle();
+                    frets[j].midline_intersection = midline.intersect(frets[j].fret);
+                    temp = new Segment(midline.end2, frets[j].midline_intersection);
+                    frets[j].midline_bridgeDist = temp.length();
+                    temp = new Segment(midline.end1, frets[j].midline_intersection);
+                    frets[j].midline_nutDist = temp.length();
+                    temp = new Segment(frets[j-1].midline_intersection, frets[j].midline_intersection);
+                    frets[j].midline_pFretDist = temp.length();
+                } else {
+                    frets[j].fret = new Segment(frets[j].intersection, frets[j].intersection);
+                    frets[j].width = 0;
+                    frets[j].angle = Number.NaN;
+                    frets[j].midline_intersection = new Point(Number.NaN, Number.NaN);
+                    frets[j].midline_bridgeDist = Number.NaN;
+                    frets[j].midline_nutDist = Number.NaN;
+                    frets[j].midline_pFretDist = Number.NaN;
+                }
+                totalWidth[j] += frets[j].width;
+            
+            }
+            strings.push(frets);
+        }
+        guitar.frets = strings;
+        guitar.fretWidths = totalWidth;
+        guitar.midline = midline;
+        guitar.nut = nut;
+        guitar.bridge = bridge;
+        guitar.meta = meta;
+        return guitar;
+    }
+    
     var drawGuitar = function(paper, guitar) {
         var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
         var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
+        var metastyle = {stroke:'rgb(221,221,221)','stroke-width':'1px'};
         var fretstyle = {stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
+        
         paper.clear();
+        
+        var all = paper.set();
+        
         var stringpath = '';
-        for (var i=1; i<guitar.strings.length-1; i++) {
+        for (var i in guitar.strings) {
             stringpath += guitar.strings[i].toSVGD();
         }
-        var all = paper.set();
         var strings = paper.path(stringpath).attr(stringstyle);
-        var edge1 = guitar.strings[0];
-        var edge2 = guitar.strings[guitar.strings.length-1];
-        var edges = paper.path(edge1.toSVGD() + edge2.toSVGD()).attr(edgestyle);
+        all.push(strings);
         
-        var nut = new Segment(edge1.end1.copy(), edge2.end1.copy());
-        var bridge = new Segment(edge1.end2.copy(), edge2.end2.copy());
+        var metapath = '';
+        for (var i in guitar.meta) {
+            metapath += guitar.meta[i].toSVGD();
+        }
+        var metas = paper.path(metapath).attr(metastyle);
+        all.push(metas);
         
-        var ends = paper.path(nut.toSVGD() + bridge.toSVGD()).attr(fretstyle);
+        var edges = paper.path(guitar.edge1.toSVGD() + guitar.edge2.toSVGD()).attr(edgestyle);
+        all.push(edges);
         
-        all.push(strings, edges, ends);
+        var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(fretstyle);
+        all.push(ends);
+        
+        var fretpath = '';
+        for (var i in guitar.frets) {
+            for (var j in guitar.frets[i]) {
+                fretpath += guitar.frets[i][j].fret.toSVGD();
+            }
+        }
+        var frets = paper.path(fretpath).attr(fretstyle);
+        all.push(frets);
         
         // calculate scale
         var gw = edges.getBBox().width;
@@ -331,6 +489,8 @@ var ff = (function(){
         Scale: Scale,
         etScale: etScale,
         scalaScale: scalaScale,
+        //calculate
+        fretGuitar: fretGuitar,
         //output
         drawGuitar: drawGuitar,
         //form helpers
