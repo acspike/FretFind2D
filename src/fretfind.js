@@ -359,4 +359,4 @@ var ff = (function(){
         initHelp: initHelp,
         initAlternatives: initAlternatives
     };
-}())
+}());
