@@ -9,6 +9,9 @@ td {
     float: left;
     width: 600px;
 }
+#output {
+    float: left;
+}
 dt,dd {
     margin:5px;
 }
@@ -27,8 +30,4 @@ dd.help {
     font-size: 0.8em;
     border: 2px dashed red;
     padding: 10px;
-}
-#output {
-    float: left;
-    border: 1px solid black;
 }

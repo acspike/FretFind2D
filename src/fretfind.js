@@ -244,14 +244,117 @@ var ff = (function(){
         }
         return scale;
     }
+
+    var drawGuitar = function(paper, guitar) {
+        var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
+        var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
+        var fretstyle =	{stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
+        paper.clear();
+        var stringpath = '';
+        for (var i=1; i<guitar.strings.length-1; i++) {
+            stringpath += guitar.strings[i].toSVGD()
+        }
+        var all = paper.set()
+        var strings = paper.path(stringpath).attr(stringstyle);
+        var edge1 = guitar.strings[0];
+        var edge2 = guitar.strings[guitar.strings.length-1];
+        var edges = paper.path(edge1.toSVGD() + edge2.toSVGD()).attr(edgestyle);
+        
+        var nut = new Segment(edge1.end1.copy(), edge2.end1.copy());
+        var bridge = new Segment(edge1.end2.copy(), edge2.end2.copy());
+        
+        var ends = paper.path(nut.toSVGD() + bridge.toSVGD()).attr(fretstyle);
+        
+        all.push(strings, edges, ends);
+        
+        // calculate scale
+        var gw = edges.getBBox().width;
+        var gh = edges.getBBox().height;
+        var pw = paper.width;
+        var ph = paper.height;
+        var scale = Math.min(pw/gw,ph/gh);
+        all.scale(scale,scale,0,0);
+    }
+    
+    var getAlt = function(id) {
+        return $('#'+id).find('dt.selected-alt').attr('id');
+    }
+    var getStr = function(id) {
+        return document.getElementById(id).value;
+    }
+    var getFlt = function(id) {
+        return parseFloat(document.getElementById(id).value);
+    }
+    var getInt = function(id) {
+        return parseInt(document.getElementById(id).value);
+    }
+    var getTuning = function(id) {
+        var tunings = [];
+        $('#'+id+' > input').each(function(_,item){tunings.push(parseInt(item.value));});
+        return tunings;
+    }
+    var setTuning = function(tuning_id, string_count_id, change_callback) {
+        var strings = getInt(string_count_id);
+        var tunings = getTuning(tuning_id);
+        output = '';
+        for (var i=0; i<strings; i++) {
+            output += 'string '+(i+1)+': <input type="text" value="'+(tunings[i] || 0)+'" /><br />';
+        }
+        $('#'+tuning_id).html(output);
+        $('#'+tuning_id+' > input').change(change_callback);
+    }
+    var initHelp = function(form_id) {
+        //create help links for each element in the help class 
+        //append to previous sibling dt
+        $('#'+form_id).find('dd.help').prev().prev().
+            append(' [<a class="help" href="#">?</a>]').
+            find('a.help').toggle(
+                function(){$(this).parent().next().next().css('display','block');},
+                function(){$(this).parent().next().next().css('display','none');}
+            );
+    }
+    var initAlternatives = function(form_id, change_callback) {
+        //create alternative switches
+        $('#'+form_id).find('dl.alternative').each(function(_,item){
+            $(item).children('dt').each(function(_,jtem){
+                var alt = $(jtem).next();
+                $(jtem).click(function(){
+                    //visual que for selected
+                    $(this).parent().children('dt').removeClass('selected-alt');
+                    $(this).addClass('selected-alt');
+                    //display selected dd
+                    $(this).parent().children('dd').css('display','none');
+                    alt.css('display','block');
+                    change_callback();
+                });
+            });
+            //reorder dt to top
+            $(item).children('dt').prependTo($(item));
+            //initialize first as selected
+            $(item).children('dt').first().click();
+        });
+    }
 	
     return {
+        //geometry 
         getPrecision: function() {return precision;},
         setPrecision: function(x) {precision = x;},
         Point: Point,
         Segment: Segment,
+        //scales
         Scale: Scale,
         etScale: etScale,
-        scalaScale: scalaScale
+        scalaScale: scalaScale,
+        //output
+        drawGuitar: drawGuitar,
+        //form helpers
+        getAlt: getAlt,
+        getStr: getStr,
+        getFlt: getFlt,
+        getInt: getInt,
+        getTuning: getTuning,
+        setTuning: setTuning,
+        initHelp: initHelp,
+        initAlternatives: initAlternatives
     };
 }())

@@ -10,102 +10,50 @@
 <script type="text/javascript" src="fretfind.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-//surface for drawing fretboard
-var paper;
-
-var draw = function(guitar) {
-    var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
-	var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
-	var fretstyle =	{stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
-    paper.clear();
-    var stringpath = '';
-    for (var i=1; i<guitar.strings.length-1; i++) {
-        stringpath += guitar.strings[i].toSVGD()
-    }
-    var all = paper.set()
-    var strings = paper.path(stringpath).attr(stringstyle);
-    var edge1 = guitar.strings[0];
-    var edge2 = guitar.strings[guitar.strings.length-1];
-    var edges = paper.path(edge1.toSVGD() + edge2.toSVGD()).attr(edgestyle);
-    
-    var nut = new ff.Segment(edge1.end1.copy(), edge2.end1.copy());
-    var bridge = new ff.Segment(edge1.end2.copy(), edge2.end2.copy());
-    
-    var ends = paper.path(nut.toSVGD() + bridge.toSVGD()).attr(fretstyle);
-    
-    all.push(strings, edges, ends);
-    
-    // calculate scale
-    var gw = edges.getBBox().width;
-    var gh = edges.getBBox().height;
-    var pw = paper.width;
-    var ph = paper.height;
-    var scale = Math.min(pw/gw,ph/gh);
-    all.scale(scale,scale,0,0);
-
-}
-
-var getAlt = function(id) {
-    return $('#'+id).find('dt.selected-alt').attr('id');
-}
-var getStr = function(id) {
-    return document.getElementById(id).value;
-}
-var getFlt = function(id) {
-    return parseFloat(document.getElementById(id).value);
-}
-var getInt = function(id) {
-    return parseInt(document.getElementById(id).value);
-}
-var getTuning = function() {
-    var tunings = [];
-    $('#tuning > input').each(function(_,item){tunings.push(parseInt(item.value));});
-    return tunings;
-}
-
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
 var getGuitar = function() {
     //get form values
-    var scaleLength = getFlt('inputScale');
-    var scaleLengthF = getFlt('inputScaleF');
-    var scaleLengthL = getFlt('inputScaleL');
-    var perp = getFlt('inputPerp');
-    var nutWidth = getFlt('inputNutWidth');
-    var bridgeWidth = getFlt('inputBridgeWidth');
-    var strings = getInt('inputStrings');
+    var scaleLength = ff.getFlt('inputScale');
+    var scaleLengthF = ff.getFlt('inputScaleF');
+    var scaleLengthL = ff.getFlt('inputScaleL');
+    var perp = ff.getFlt('inputPerp');
+    var nutWidth = ff.getFlt('inputNutWidth');
+    var bridgeWidth = ff.getFlt('inputBridgeWidth');
+    var strings = ff.getInt('inputStrings');
+    var units = 'in';//ff.getStr('inputUnits');
 
-    var frets = getInt('inputFrets');
-    var tuning = getTuning();
+    var frets = ff.getInt('inputFrets');
+    var tuning = ff.getTuning('tuning');
     var oNF;
     var oNL;
     var oBF;
     var oBL;
-    switch (getAlt('overhang')) {
+    switch (ff.getAlt('overhang')) {
 	    case 'equal':
-		    oNF = oNL = oBF = oBL = getFlt('inputOverhangE');
+		    oNF = oNL = oBF = oBL = ff.getFlt('inputOverhangE');
 		    break;
 	    case 'nutbridge':
-		    oNF = oNL = getFlt('inputOverhangN');
-		    oBF = oBL = getFlt('inputOverhangB');
+		    oNF = oNL = ff.getFlt('inputOverhangN');
+		    oBF = oBL = ff.getFlt('inputOverhangB');
 		    break;
 	    case 'firstlast':
-		    oNF = oBF = getFlt('inputOverhangF');
-		    oBL = oNL = getFlt('inputOverhangL');
+		    oNF = oBF = ff.getFlt('inputOverhangF');
+		    oBL = oNL = ff.getFlt('inputOverhangL');
 		    break;
 	    case 'all':
-		    oNF = getFlt('inputOverhangNF');
-		    oBF = getFlt('inputOverhangBF');
-		    oNL = getFlt('inputOverhangNL');
-		    oBL = getFlt('inputOverhangBL');
+		    oNF = ff.getFlt('inputOverhangNF');
+		    oBF = ff.getFlt('inputOverhangBF');
+		    oNL = ff.getFlt('inputOverhangNL');
+		    oBL = ff.getFlt('inputOverhangBL');
 		    break;
     }
     var scale;
-    if (getAlt('scale')=='et') {
-        var tones = getFlt('inputCalcR');
+    if (ff.getAlt('scale')=='et') {
+        var tones = ff.getFlt('inputCalcR');
         scale = ff.etScale(tones,2);
     } else {
-        var scala = getStr('inputCalcS');
+        var scala = ff.getStr('inputCalcS');
         scale = ff.scalaScale(scala);
     }
     
@@ -133,7 +81,7 @@ var getGuitar = function() {
     var ldeltax = sbxl - snxl;
     var fdeltay;
     var ldeltay;
-    if (getAlt('length')=='single') {
+    if (ff.getAlt('length')=='single') {
         fdeltay = ldeltay = scaleLength;
     } else {
         fdeltay = Math.sqrt((scaleLengthF * scaleLengthF) - (fdeltax * fdeltax));
@@ -144,7 +92,7 @@ var getGuitar = function() {
     var first = new ff.Segment(new ff.Point(snxf, 0), new ff.Point(sbxf, fdeltay));
     var last = new ff.Segment(new ff.Point(snxl, 0), new ff.Point(sbxl, ldeltay));
 
-    if (getAlt('length')=='multiple') {
+    if (ff.getAlt('length')=='multiple') {
         //translate so that perpendicular distance lines up
         var fperp = perp * fdeltay;
         var lperp = perp * ldeltay;
@@ -158,7 +106,7 @@ var getGuitar = function() {
     var nut = new ff.Segment(first.end1.copy(), last.end1.copy());
     var bridge = new ff.Segment(first.end2.copy(), last.end2.copy());
 
-    if (getAlt('length')=='multiple') {
+    if (ff.getAlt('length')=='multiple') {
         //overhang measurements are now converted from delta x to along line lengths
         oNF = (oNF * nut.length()) / nutWidth;
         oNL = (oNL * nut.length()) / nutWidth;
@@ -200,65 +148,30 @@ var getGuitar = function() {
         scale: scale,
         tuning: tuning,
         strings: lines,
-        frets: frets
+        frets: frets,
+        units: units
     };
 }
+
+
+//surface for drawing fretboard
+var paper;
 
 var processChanges = false;
 var onChange = function() {
     if (processChanges) {
         var guitar = getGuitar();
-        draw(guitar);
-
-        
+        ff.drawGuitar(paper, guitar);
     }
-}
-
-var setTuning = function() {
-    var strings = getInt('inputStrings');
-    var tunings = getTuning();
-    output = '';
-    for (var i=0; i<strings; i++) {
-        output += 'string '+(i+1)+': <input type="text" value="'+(tunings[i] || 0)+'" /><br />';
-    }
-    $('#tuning').html(output);
-    $('#tuning > input').change(onChange);
 }
 
 $(document).ready(function() {
-
-    //create help links for each element in the help class 
-    //append to previous sibling dt
-    $('dd.help').prev().prev().
-        append(' [<a class="help" href="#">?</a>]').
-        find('a.help').toggle(
-            function(){$(this).parent().next().next().css('display','block');},
-            function(){$(this).parent().next().next().css('display','none');}
-        );
-    //create alternative switches
-    $('dl.alternative').each(function(_,item){
-        $(item).children('dt').each(function(_,jtem){
-            var alt = $(jtem).next();
-            $(jtem).click(function(){
-                //visual que for selected
-                $(this).parent().children('dt').removeClass('selected-alt');
-                $(this).addClass('selected-alt');
-                //display selected dd
-                $(this).parent().children('dd').css('display','none');
-                alt.css('display','block');
-                onChange();
-            });
-        });
-        //reorder dt to top
-        $(item).children('dt').prependTo($(item));
-        //initialize first as selected
-        $(item).children('dt').first().click();
-    });
-    
-    $('#inputStrings').change(setTuning);
+    ff.initHelp('worksheet');
+    ff.initAlternatives('worksheet', onChange);
+    $('#inputStrings').change(function(){ff.setTuning('tuning', 'inputStrings', onChange);});
     $('#worksheet').find('input, textarea').change(onChange);
-    setTuning();
-    paper = Raphael("output",200,600);
+    ff.setTuning('tuning', 'inputStrings', onChange);
+    paper = Raphael('output',200,600);
     processChanges = true;
     onChange();
 });
