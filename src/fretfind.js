@@ -39,18 +39,18 @@ var ff = (function(){
     }
     Point.prototype.toString = function() {
 		return "(" + roundFloat(this.x, precision) + "," + roundFloat(this.y, precision) + ")";
-	}
+	};
 	Point.prototype.translate = function(x, y) {
 		this.x += x;
 		this.y += y;
 		return this;
-	}
+	};
 	Point.prototype.copy = function() {
 		return new Point(this.x, this.y);
-	}
+	};
 	Point.prototype.equals = function(point) {
 		return this.x === point.x && this.y === point.y;
-	}
+	};
 
 
     function Segment(one, two) {
@@ -59,56 +59,56 @@ var ff = (function(){
     }	
 	Segment.prototype.deltaX = function() {
 		return this.end2.x - this.end1.x;
-	}
+	};
 	Segment.prototype.run = Segment.prototype.deltaX;
 	Segment.prototype.deltaY = function() {
 		return this.end2.y - this.end1.y;
-	}
+	};
 	Segment.prototype.rise = Segment.prototype.deltaY;
 	Segment.prototype.slope = function() {
 		if (this.deltaX() !== 0) {
 			return this.deltaY() / this.deltaX();
 		}
 		return Number.NaN;
-	}
+	};
 	Segment.prototype.intercept = function() {
 		if (this.deltaX() !== 0) {
 			return this.end2.y - (this.end2.x * this.slope());
 		}
 		return Number.NaN;
-	}
+	};
 	Segment.prototype.distanceToPoint = function(point) {
 		var len = this.length();
 		if (len === 0) {return Number.NaN;}
 		return Math.abs(((this.end2.x - this.end1.x) * (this.end1.y - point.y)) -
 			((this.end1.x - point.x) * (this.end2.y - this.end1.y))) / len;
-	}
+	};
 	Segment.prototype.angle = function() {
-		return (180/Math.PI) * Math.atan2(this.deltaY(), this.deltaX()); 	
-	}
+		return (180 / Math.PI) * Math.atan2(this.deltaY(), this.deltaX()); 	
+	};
 	Segment.prototype.length = function() {
 		return Math.sqrt(
 			((this.end2.x - this.end1.x) * (this.end2.x - this.end1.x)) +
 			((this.end2.y - this.end1.y) * (this.end2.y - this.end1.y))
 			);
-	}
+	};
 	Segment.prototype.toString = function() {
 		return "(" + this.end1.toString() + ":" + this.end2.toString() + ")";
-	}
+	};
 	Segment.prototype.pointAtRatio = function(ratio) {
 		var x = this.end1.x + (ratio * this.deltaX());
 		var y = this.end1.y + (ratio * this.deltaY());
 		return new Point(x, y);
-	}
+	};
 	Segment.prototype.pointAtLength = function(len)	{
 		if (this.length() === 0) {return new Point(Number.NaN, Number.NaN);}
 		var ratio = len / this.length();
 		return this.pointAtRatio(ratio);
-	}
+	};
     Segment.prototype.pointAt = Segment.prototype.pointAtLength;
 	Segment.prototype.createParallel = function(point) {
 		return new Segment(new Point(point.x + this.deltaX(), point.y + this.deltaY()), point.copy());
-	}
+	};
 	// intersection of projected ideal line; not constrained by segment endpoints
 	Segment.prototype.intersect = function(line) {
 		var retval = new Point(Number.NaN, Number.NaN);
@@ -135,25 +135,25 @@ var ff = (function(){
 			retval = new Point(x, y);
 		}
 		return retval;
-	}
+	};
 	Segment.prototype.translate = function(x, y) {
 		this.end1.translate(x, y);
 		this.end2.translate(x, y);
 		return this;
-	}
+	};
 	// equality test allows for flipped swapped endpoints
 	// a number of other equality test might be appropriate 
 	// we'll have to see how it gets used
 	Segment.prototype.equals = function(line) {
 	    return (this.end1.equals(line.end1) && this.end2.equals(line.end2)) || 
 	        (this.end1.equals(line.end2) && this.end2.equals(line.end1));
-	}
+	};
 	Segment.prototype.copy = function() {
 	    return new Segment(this.end1.copy(), this.end2.copy());
-	}
+	};
 	Segment.prototype.toSVGD = function() {
 	    return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
-	}
+	};
 	
 
 
@@ -168,14 +168,16 @@ var ff = (function(){
         this.errors++;
         this.errorstrings.push(str);
         return this;
-    }
+    };
     Scale.prototype.addStep = function(num,denom) {
         this.steps.push([num,denom]);
         return this;
-    }
+    };
     
     function etScale(tones, octave) {
-        if (typeof octave === 'undefined' ) octave = 2;
+        if (typeof octave === 'undefined' ) {
+            octave = 2;
+        }
         var scale = new Scale();
         if (tones === 0) {
             scale.addError('Error: Number of tones must be non zero!');
@@ -206,14 +208,14 @@ var ff = (function(){
         scale.title = alllines.shift();
         
         // second line indicates the number of note lines that should follow
-        var expected = parseInt(alllines.shift());
+        var expected = parseInt(alllines.shift(), 10);
         
         // discard blank lines and anything following whitespace
         var lines = [];
         for (var i in alllines) {
             var line = alllines[i];
             if (line.length() > 0) {
-                lines.push(line.split(/\s+/)[0])
+                lines.push(line.split(/\s+/)[0]);
             }
         }
         
@@ -230,10 +232,10 @@ var ff = (function(){
                     num = Math.pow(2,parseFloat(l)/1200);
                 } else if (/\//.test(l)) {
                     l = l.split(/\//);
-                    num = parseInt(l[0]);
-                    denom = parseInt(l[1]);
+                    num = parseInt(l[0], 10);
+                    denom = parseInt(l[1], 10);
                 } else {
-                    num = parseInt(l);
+                    num = parseInt(l, 10);
                 }
                 scale.addStep(num, denom);
                 
@@ -252,9 +254,9 @@ var ff = (function(){
         paper.clear();
         var stringpath = '';
         for (var i=1; i<guitar.strings.length-1; i++) {
-            stringpath += guitar.strings[i].toSVGD()
+            stringpath += guitar.strings[i].toSVGD();
         }
-        var all = paper.set()
+        var all = paper.set();
         var strings = paper.path(stringpath).attr(stringstyle);
         var edge1 = guitar.strings[0];
         var edge2 = guitar.strings[guitar.strings.length-1];
@@ -274,35 +276,35 @@ var ff = (function(){
         var ph = paper.height;
         var scale = Math.min(pw/gw,ph/gh);
         all.scale(scale,scale,0,0);
-    }
+    };
     
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
-    }
+    };
     var getStr = function(id) {
         return document.getElementById(id).value;
-    }
+    };
     var getFlt = function(id) {
         return parseFloat(document.getElementById(id).value);
-    }
+    };
     var getInt = function(id) {
         return parseInt(document.getElementById(id).value);
-    }
+    };
     var getTuning = function(id) {
         var tunings = [];
-        $('#'+id+' > input').each(function(_,item){tunings.push(parseInt(item.value));});
+        $('#'+id+' > input').each(function(_,item){tunings.push(parseInt(item.value, 10));});
         return tunings;
-    }
+    };
     var setTuning = function(tuning_id, string_count_id, change_callback) {
         var strings = getInt(string_count_id);
         var tunings = getTuning(tuning_id);
-        output = '';
+        var output = '';
         for (var i=0; i<strings; i++) {
             output += 'string '+(i+1)+': <input type="text" value="'+(tunings[i] || 0)+'" /><br />';
         }
         $('#'+tuning_id).html(output);
         $('#'+tuning_id+' > input').change(change_callback);
-    }
+    };
     var initHelp = function(form_id) {
         //create help links for each element in the help class 
         //append to previous sibling dt
@@ -312,7 +314,7 @@ var ff = (function(){
                 function(){$(this).parent().next().next().css('display','block');},
                 function(){$(this).parent().next().next().css('display','none');}
             );
-    }
+    };
     var initAlternatives = function(form_id, change_callback) {
         //create alternative switches
         $('#'+form_id).find('dl.alternative').each(function(_,item){
@@ -333,7 +335,7 @@ var ff = (function(){
             //initialize first as selected
             $(item).children('dt').first().click();
         });
-    }
+    };
 	
     return {
         //geometry 
