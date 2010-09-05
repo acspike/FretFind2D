@@ -6,6 +6,7 @@ td {
     vertical-align: top;
     }
 #worksheet {
+    float: left;
     width: 600px;
 }
 dt,dd {
@@ -26,4 +27,8 @@ dd.help {
     font-size: 0.8em;
     border: 2px dashed red;
     padding: 10px;
+}
+#output {
+    float: left;
+    border: 1px solid black;
 }

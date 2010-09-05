@@ -1,4 +1,4 @@
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <!-- Copyright (C) 2004, 2010 Aaron C Spike -->
 <title>FretFind2D</title>
@@ -6,15 +6,45 @@
 <meta name="description" lang="en" content="FretFind2d models fretboards as a system of line segments on a two dimensional plane to design freboards with multiple scale lenghts and microtonal scales." />
 <link rel="stylesheet" type="text/css" href="fretfind.css" />
 <script type="text/javascript" src="libs/jquery-1.4.2.js"></script>
+<script type="text/javascript" src="libs/raphael-min.js"></script>
 <script type="text/javascript" src="fretfind.js"></script>
 <script type="text/javascript">
 //<![CDATA[
-var processChanges = false;
-var onChange = function() {
-    if (processChanges) {
-        
+//surface for drawing fretboard
+var paper;
+
+var draw = function(guitar) {
+    var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
+	var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
+	var fretstyle =	{stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
+    paper.clear();
+    var stringpath = '';
+    for (var i=1; i<guitar.strings.length-1; i++) {
+        stringpath += guitar.strings[i].toSVGD()
     }
+    var all = paper.set()
+    var strings = paper.path(stringpath).attr(stringstyle);
+    var edge1 = guitar.strings[0];
+    var edge2 = guitar.strings[guitar.strings.length-1];
+    var edges = paper.path(edge1.toSVGD() + edge2.toSVGD()).attr(edgestyle);
+    
+    var nut = new ff.Segment(edge1.end1.copy(), edge2.end1.copy());
+    var bridge = new ff.Segment(edge1.end2.copy(), edge2.end2.copy());
+    
+    var ends = paper.path(nut.toSVGD() + bridge.toSVGD()).attr(fretstyle);
+    
+    all.push(strings, edges, ends);
+    
+    // calculate scale
+    var gw = edges.getBBox().width;
+    var gh = edges.getBBox().height;
+    var pw = paper.width;
+    var ph = paper.height;
+    var scale = Math.min(pw/gw,ph/gh);
+    all.scale(scale,scale,0,0);
+
 }
+
 var getAlt = function(id) {
     return $('#'+id).find('dt.selected-alt').attr('id');
 }
@@ -29,9 +59,161 @@ var getInt = function(id) {
 }
 var getTuning = function() {
     var tunings = [];
-    $('#tuning > input:text').each(function(_,item){tunings.push(parseInt(item.value));});
+    $('#tuning > input').each(function(_,item){tunings.push(parseInt(item.value));});
     return tunings;
 }
+
+// output a guitar (scale, tuning and strings (with fretboard edges))
+// based upon form values
+var getGuitar = function() {
+    //get form values
+    var scaleLength = getFlt('inputScale');
+    var scaleLengthF = getFlt('inputScaleF');
+    var scaleLengthL = getFlt('inputScaleL');
+    var perp = getFlt('inputPerp');
+    var nutWidth = getFlt('inputNutWidth');
+    var bridgeWidth = getFlt('inputBridgeWidth');
+    var strings = getInt('inputStrings');
+
+    var frets = getInt('inputFrets');
+    var tuning = getTuning();
+    var oNF;
+    var oNL;
+    var oBF;
+    var oBL;
+    switch (getAlt('overhang')) {
+	    case 'equal':
+		    oNF = oNL = oBF = oBL = getFlt('inputOverhangE');
+		    break;
+	    case 'nutbridge':
+		    oNF = oNL = getFlt('inputOverhangN');
+		    oBF = oBL = getFlt('inputOverhangB');
+		    break;
+	    case 'firstlast':
+		    oNF = oBF = getFlt('inputOverhangF');
+		    oBL = oNL = getFlt('inputOverhangL');
+		    break;
+	    case 'all':
+		    oNF = getFlt('inputOverhangNF');
+		    oBF = getFlt('inputOverhangBF');
+		    oNL = getFlt('inputOverhangNL');
+		    oBL = getFlt('inputOverhangBL');
+		    break;
+    }
+    var scale;
+    if (getAlt('scale')=='et') {
+        var tones = getFlt('inputCalcR');
+        scale = ff.etScale(tones,2);
+    } else {
+        var scala = getStr('inputCalcS');
+        scale = ff.scalaScale(scala);
+    }
+    
+    //choose an x value for the center line
+    var nutHalf = nutWidth / 2;
+	var bridgeHalf = bridgeWidth / 2;
+    var nutCandidateCenter = (nutHalf) + oNL;
+	var bridgeCandidateCenter = (bridgeHalf) + oBL;
+	var xcenter = bridgeCandidateCenter >= nutCandidateCenter ? bridgeCandidateCenter : nutCandidateCenter;
+    
+    //find x values for fretboard edges
+    var fbnxf = xcenter + nutHalf + oNF;
+    var fbbxf = xcenter + bridgeHalf + oBF;
+    var fbnxl = xcenter - (nutHalf + oNL);
+    var fbbxl = xcenter - (bridgeHalf + oBL);
+
+    //find x values for first and last strings
+    var snxf = xcenter + nutHalf;
+    var sbxf = xcenter + bridgeHalf;
+    var snxl = xcenter - nutHalf;
+    var sbxl = xcenter - bridgeHalf;
+
+    //find the slope of the strings
+    var fdeltax = sbxf - snxf;
+    var ldeltax = sbxl - snxl;
+    var fdeltay;
+    var ldeltay;
+    if (getAlt('length')=='single') {
+        fdeltay = ldeltay = scaleLength;
+    } else {
+        fdeltay = Math.sqrt((scaleLengthF * scaleLengthF) - (fdeltax * fdeltax));
+        ldeltay = Math.sqrt((scaleLengthL * scaleLengthL) - (ldeltax * ldeltax));
+    }
+    
+    //temporarily place first and last strings
+    var first = new ff.Segment(new ff.Point(snxf, 0), new ff.Point(sbxf, fdeltay));
+    var last = new ff.Segment(new ff.Point(snxl, 0), new ff.Point(sbxl, ldeltay));
+
+    if (getAlt('length')=='multiple') {
+        //translate so that perpendicular distance lines up
+        var fperp = perp * fdeltay;
+        var lperp = perp * ldeltay;
+        if (fdeltay <= ldeltay) {
+	        first.translate(0, (lperp - fperp));
+        } else {
+	        last.translate(0, (fperp - lperp));
+        }
+    }
+    
+    var nut = new ff.Segment(first.end1.copy(), last.end1.copy());
+    var bridge = new ff.Segment(first.end2.copy(), last.end2.copy());
+
+    if (getAlt('length')=='multiple') {
+        //overhang measurements are now converted from delta x to along line lengths
+        oNF = (oNF * nut.length()) / nutWidth;
+        oNL = (oNL * nut.length()) / nutWidth;
+        oBF = (oBF * bridge.length()) / bridgeWidth;
+        oBL = (oBL * bridge.length()) / bridgeWidth;
+    }
+    
+    //place fretboard edges;
+    var fbf = new ff.Segment(nut.pointAt(-oNF), bridge.pointAt(-oBF));
+    var fbl = new ff.Segment(nut.pointAt(nut.length() + oNL), bridge.pointAt(bridge.length() + oBL));
+    
+    //normalize values into the first quadrant via translate
+    if (fbf.end1.y < 0 || fbl.end1.y < 0)
+    {
+	    var move = fbf.end1.y <= fbl.end1.y ? -fbf.end1.y : -fbl.end1.y;
+	
+	    first.translate(0, move);
+	    last.translate(0, move);
+	    nut.translate(0, move);
+	    bridge.translate(0, move);
+	    fbf.translate(0, move);
+	    fbl.translate(0, move);
+    }
+
+    var nutStringSpacing = nut.length() / (strings - 1);
+    var bridgeStringSpacing = bridge.length() / (strings - 1);
+    
+    var lines = [fbf,first];
+    for (var i=1; i<=(strings-2); i++)
+    {
+	    var n=nut.pointAt(i * nutStringSpacing);
+	    var b=bridge.pointAt(i * bridgeStringSpacing);
+	    lines.push(new ff.Segment(n, b));
+    }
+    lines.push(last)
+    lines.push(fbl);
+    
+    return {
+        scale: scale,
+        tuning: tuning,
+        strings: lines,
+        frets: frets
+    };
+}
+
+var processChanges = false;
+var onChange = function() {
+    if (processChanges) {
+        var guitar = getGuitar();
+        draw(guitar);
+
+        
+    }
+}
+
 var setTuning = function() {
     var strings = getInt('inputStrings');
     var tunings = getTuning();
@@ -40,7 +222,7 @@ var setTuning = function() {
         output += 'string '+(i+1)+': <input type="text" value="'+(tunings[i] || 0)+'" /><br />';
     }
     $('#tuning').html(output);
-    $('#tuning > input:text').change(onChange);
+    $('#tuning > input').change(onChange);
 }
 
 $(document).ready(function() {
@@ -76,6 +258,7 @@ $(document).ready(function() {
     $('#inputStrings').change(setTuning);
     $('#worksheet').find('input, textarea').change(onChange);
     setTuning();
+    paper = Raphael("output",200,600);
     processChanges = true;
     onChange();
 });
@@ -245,6 +428,7 @@ Fret	P.D.		Fret	P.D.
                 </table>
             </dd>
         </dl>
+    </dd>
     <dd class="help">
         The fretboard overhang is the distance from the center of outer strings to edge of nut or bridge. 
         There are four input modes for overhang. Equal: you enter a single value and the overhang will be constant.
@@ -320,6 +504,7 @@ Fret	P.D.		Fret	P.D.
         Entering a tuning for the Scala calculation method will very likely result in partial frets.
     </dd>
 </dl><!-- worksheet -->
+<div id="output"></div>
 </body>
 </html>
 

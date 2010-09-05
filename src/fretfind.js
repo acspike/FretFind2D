@@ -151,6 +151,10 @@ var ff = (function(){
 	Segment.prototype.copy = function() {
 	    return new Segment(this.end1.copy(), this.end2.copy());
 	}
+	Segment.prototype.toSVGD = function() {
+	    return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
+	}
+	
 
 
     function Scale() {
