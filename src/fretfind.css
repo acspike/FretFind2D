@@ -17,6 +17,7 @@ dt,dd {
 }
 dl.alternative > dd {
     display: none;
+	border-left: 2px solid #aaa;
 }
 dl.alternative > dt {
     display: inline;
