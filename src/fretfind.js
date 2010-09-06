@@ -531,7 +531,7 @@ var ff = (function(){
     // - TAB
     // - minimal DXF
     // - more compatible DXF borrowing from inkscape?
-    // -
+    // - HTML
     
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
