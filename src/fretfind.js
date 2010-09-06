@@ -518,7 +518,64 @@ var ff = (function(){
         }
         output.push('</svg>');
         return output.join('');
-    }
+    };
+    
+    var getHTML = function(guitar) {
+        var output = '<html><head><title>FretFind</title><style type="text/css">\n'+
+            'table.foundfrets {border-collapse: collapse;}\n'+
+            'table.foundfrets td {border:1px solid black;padding: 0px 5px 0px 5px;}\n'+
+            '</style></head><body>\n'+
+            getTable(guitar)+
+            '</body></html>';
+        return output;
+    };
+    
+    var getDelimited = function(guitar, sep, wrap) {
+        if (typeof wrap === 'undefined') {
+            wrap = function(x){return x;};
+        }
+        var output = [wrap('Midline')+'\n'+wrap('endpoints')+sep+wrap('length')+sep+wrap('angle')+'\n'+
+            wrap(guitar.midline.toString())+sep+guitar.midline.length()+sep+guitar.midline.angle()+'\n\n'];
+        for (var i=0; i<guitar.frets.length; i++) {
+            output.push(wrap('String ' +(i+1))+'\n'+
+                wrap('#')+sep+wrap('to nut')+sep+wrap('to fret')+sep+wrap('to bridge')+sep+
+                wrap('intersection point')+sep+wrap('partial width')+sep+wrap('angle')+sep+
+                wrap('mid to nut')+sep+wrap('mid to fret')+sep+wrap('mid to bridge')+sep+wrap('mid intersection')+
+                '\n');
+            for(var j=0; j<guitar.frets[i].length; j++) {
+                output.push(wrap(j===0?'n':j)+sep);
+                output.push(roundFloat(guitar.frets[i][j].nutDist, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].pFretDist, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].bridgeDist, precision));
+                output.push(sep);
+                output.push(wrap(guitar.frets[i][j].intersection.toString()));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].width, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].angle, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].midline_nutDist, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].midline_pFretDist, precision));
+                output.push(sep);
+                output.push(roundFloat(guitar.frets[i][j].midline_bridgeDist, precision));
+                output.push(sep);
+                output.push(wrap(guitar.frets[i][j].midline_intersection.toString()));
+                output.push('\n');
+            }
+        }
+        return output.join('');
+    };
+    
+    var getCSV = function(guitar) {
+        return getDelimited(guitar, ',', function(x){return '"'+x+'"';});
+    };
+    
+    var getTAB = function(guitar) {
+        return getDelimited(guitar, '\t', function(x){return x;});
+    };
     
     var getPDF = function(guitar) {
         
@@ -527,11 +584,8 @@ var ff = (function(){
     // TODO: 
     // - single page PDF
     // - multi-page PDF
-    // - CSV
-    // - TAB
     // - minimal DXF
     // - more compatible DXF borrowing from inkscape?
-    // - HTML
     
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
@@ -608,6 +662,10 @@ var ff = (function(){
         getTable: getTable,
         drawGuitar: drawGuitar,
         getSVG: getSVG,
+        getHTML: getHTML,
+        getDelimited: getDelimited,
+        getCSV: getCSV,
+        getTAB: getTAB,
         //form helpers
         getAlt: getAlt,
         getStr: getStr,

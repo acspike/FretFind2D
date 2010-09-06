@@ -197,6 +197,45 @@ $(document).ready(function() {
             return ff.getSVG(guitar);
         }
     });
+    $('#download_csv').downloadify({
+        width: 100,
+        height: 30,
+        transparent: true,
+        swf: 'libs/downloadify.swf',
+        downloadImage: 'libs/download.png',
+        filename: 'fretboard.csv',
+        data: function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            return ff.getCSV(guitar);
+        }
+    });
+    $('#download_html').downloadify({
+        width: 100,
+        height: 30,
+        transparent: true,
+        swf: 'libs/downloadify.swf',
+        downloadImage: 'libs/download.png',
+        filename: 'fretboard.html',
+        data: function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            return ff.getHTML(guitar);
+        }
+    });
+    $('#download_tab').downloadify({
+        width: 100,
+        height: 30,
+        transparent: true,
+        swf: 'libs/downloadify.swf',
+        downloadImage: 'libs/download.png',
+        filename: 'fretboard.tab',
+        data: function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            return ff.getTAB(guitar);
+        }
+    });
 });
 
 //]]>
@@ -445,6 +484,9 @@ Fret	P.D.		Fret	P.D.
     <div id="diagram"></div>
     <dl id="downloads">
         <dt>SVG</dt><dd id="download_svg"></dd>
+        <dt>CSV</dt><dd id="download_csv"></dd>
+        <dt>HTML</dt><dd id="download_html"></dd>
+        <dt>TAB</dt><dd id="download_tab"></dd>
     </dl>
     <div id="tables"></div>
 </div>
