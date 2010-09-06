@@ -589,8 +589,10 @@ var ff = (function(){
     
     var getPDF = function(guitar) {
         var x = getExtents(guitar);
-        var doc = jsPDF('P', guitar.units, [x.maxx,x.maxy]);
+        
         var unitMult = (guitar.units === 'in') ? 1 : 2.54;
+        var margin = 0.5 * unitMult;
+        var doc = jsPDF('P', guitar.units, [x.maxx + (2 * margin), x.maxy + (2 * margin)]);
         var lineWidth = (1/72) * unitMult;
 
         doc.setLineWidth(lineWidth);
@@ -598,18 +600,37 @@ var ff = (function(){
         //Output line for each string.
         for (var i=0; i<guitar.strings.length; i++) {
             var string = guitar.strings[i];
-            doc.line(string.end1.x, string.end1.y, string.end2.x, string.end2.y);
+            doc.line(
+                string.end1.x + margin, 
+                string.end1.y + margin, 
+                string.end2.x + margin, 
+                string.end2.y + margin
+                );
         }
         
         //Output line for each fretboard edge
-        doc.line(guitar.edge1.end1.x, guitar.edge1.end1.y, guitar.edge1.end2.x, guitar.edge1.end2.y);
-        doc.line(guitar.edge2.end1.x, guitar.edge2.end1.y, guitar.edge2.end2.x, guitar.edge2.end2.y);
+        doc.line(
+            guitar.edge1.end1.x + margin, 
+            guitar.edge1.end1.y + margin, 
+            guitar.edge1.end2.x + margin, 
+            guitar.edge1.end2.y + margin
+            );
+        doc.line(
+            guitar.edge2.end1.x + margin, 
+            guitar.edge2.end1.y + margin, 
+            guitar.edge2.end2.x + margin, 
+            guitar.edge2.end2.y + margin
+            );
 
         //Output a line for each fretlet. 
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
-                doc.line(guitar.frets[i][j].fret.end1.x, guitar.frets[i][j].fret.end1.y, 
-                    guitar.frets[i][j].fret.end2.x, guitar.frets[i][j].fret.end2.y);
+                doc.line(
+                    guitar.frets[i][j].fret.end1.x + margin, 
+                    guitar.frets[i][j].fret.end1.y + margin, 
+                    guitar.frets[i][j].fret.end2.x + margin, 
+                    guitar.frets[i][j].fret.end2.y + margin
+                    );
             }
         }
 
