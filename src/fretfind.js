@@ -516,6 +516,7 @@ var ff = (function(){
                 output.push('<path d="'+guitar.frets[i][j].fret.toSVGD()+'" class="fret" />\n');
             }
         }
+        output.push('</svg>');
         return output.join('');
     }
     

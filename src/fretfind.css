@@ -12,6 +12,9 @@ td {
 #diagram {
     float: left;
 }
+#downloads {
+	float: left;
+}
 #tables {
     float: left;
 }

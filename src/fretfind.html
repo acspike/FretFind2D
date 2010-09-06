@@ -7,6 +7,11 @@
 <link rel="stylesheet" type="text/css" href="fretfind.css" />
 <script type="text/javascript" src="libs/jquery-1.4.2.js"></script>
 <script type="text/javascript" src="libs/raphael-min.js"></script>
+<script type="text/javascript" src="libs/swfobject.js"></script>
+<script type="text/javascript" src="libs/downloadify.min.js"></script>
+<script type="text/javascript" src="libs/base64.js"></script>
+<script type="text/javascript" src="libs/sprintf.js"></script>
+<script type="text/javascript" src="libs/jspdf.js"></script>
 <script type="text/javascript" src="fretfind.js"></script>
 <script type="text/javascript">
 //<![CDATA[
@@ -21,7 +26,7 @@ var getGuitar = function() {
     var nutWidth = ff.getFlt('inputNutWidth');
     var bridgeWidth = ff.getFlt('inputBridgeWidth');
     var strings = ff.getInt('inputStrings');
-    var units = 'in';//ff.getStr('inputUnits');
+    var units = $("input:checked[@name='inputUnits']").val();
 
     var frets = ff.getInt('inputFrets');
     var tuning = ff.getTuning('tuning');
@@ -177,6 +182,21 @@ $(document).ready(function() {
     paper = Raphael('diagram',200,800);
     processChanges = true;
     onChange();
+    
+    // prepare download links
+    $('#download_svg').downloadify({
+        width: 100,
+        height: 30,
+        transparent: true,
+        swf: 'libs/downloadify.swf',
+        downloadImage: 'libs/download.png',
+        filename: 'fretboard.svg',
+        data: function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            return ff.getSVG(guitar);
+        }
+    });
 });
 
 //]]>
@@ -197,74 +217,80 @@ FretFind2d uses the
 for defining just or meantone scales.
 PDFs are generated with <a href="http://snapshotmedia.co.uk/uncategorized/jspdf">jsPDF</a>.
 </p>
-<dl id="worksheet">
-    <dt>scale length</dt>
-    <dd>
-        <dl id="length" class="alternative">
-            <dt id="single">single</dt>
-            <dd>
-                <dl>
-                    <dt>fundamental scale length</dt>
-                    <dd><input type="text" id="inputScale" value="25" /></dd>
-                    <dd class="help">
-                        The fundamental scale length is the length of a line drawn from 
-                        the middle of the nut to the middle of the bridge. 
-                        In this FretFind frontend that line is the perpendicular 
-                        bisector of both the nut and the bridge.
-                        I call this length "fundamental" because the on a standard instrument 
-                        with a narrow nut and a wide bridge the outer strings
-                        actaually have a slightly longer scale length.
-                    </dd>
-                </dl>
-            </dd>
-            <dt id="multiple">multiple</dt>
-            <dd>
-                <dl>
-                    <dt>first string scale length</dt>
-                    <dd><input type="text" id="inputScaleF" value="25" /></dd>
-                    <dd class="help">
-                        The scale length is the playing/speaking length of the 
-                        string measured from the nut to the bridge. 
-                        It is perhaps more properly twice the distance from the nut to the octave fret. 
-                        Enter the actual scale length of the first (traditional high E) string. 
-                    </dd>
-                    <dt>last string scale length</dt>
-                    <dd><input type="text" id="inputScaleL" value="28" /></dd>
-                    <dd class="help">
-                        The scale length is the playing/speaking length of the 
-                        string measured from the nut to the bridge. 
-                        It is perhaps more properly twice the distance from the nut to the octave fret. 
-                        Enter the actual scale length of the last (traditional low E) string. 
-                    </dd>
-                    <dt>perpendicular fret distance</dt>
-                    <dd><input type="text" id="inputPerp" value="0.5" /></dd>
-                    <dd class="help">
-                        <p>
-                        The perpendicular fret distance
-                        is the ratio of distances along the first and last 
-                        string that fall on a line perpendicular to the midline of the neck. 
-                        This is used to control the angle of the nut/frets/bridge. 
-                        </p>
-                        <p>
-                        Traditionally this property of non-parallelly fretted 
-                        fretboards is measured by assigning a "perpendicular fret".
-                        "Perpendicular distance" avoids two problems with the "perpendicular fret" method. 
-                        First, it is possible that no fret falls into this perpendicular position. 
-                        With "perpendicular distance" we avoid fractional frets.
-                        Second, it is possible and even likely with non-equal temperament fretboards that 
-                        as a fret crosses the fretboard it will fall at different ratios along the strings. 
-                        With "perpendicular distance" we aviod complex calculations 
-                        and have more predictible results.
-                        </p>
-                        <p>
-                        A value of 0 results in a perpendicular nut. 
-                        A value of 1 results in a perpendicular bridge.
-                        The default 0.5 results in a perpendicular octave fret.
-                        To calculate an appropriate value for any fret,
-                        simply divide the distance of the fret from the nut by the total length of the string.
-                        In twelve tone equal temperament the values look like this:
-                        </p>
-                        <pre>
+<div id="fretfind">
+    <dl id="worksheet">
+        <dd>units</dd>
+        <dd>
+            <label><input type="radio" name="units" value="in" checked="checked"/>inches</label>
+            <label><input type="radio" name="units" value="cm" />centimeters</label>
+        </dd>
+        <dt>scale length</dt>
+        <dd>
+            <dl id="length" class="alternative">
+                <dt id="single">single</dt>
+                <dd>
+                    <dl>
+                        <dt>fundamental scale length</dt>
+                        <dd><input type="text" id="inputScale" value="25" /></dd>
+                        <dd class="help">
+                            The fundamental scale length is the length of a line drawn from 
+                            the middle of the nut to the middle of the bridge. 
+                            In this FretFind frontend that line is the perpendicular 
+                            bisector of both the nut and the bridge.
+                            I call this length "fundamental" because the on a standard instrument 
+                            with a narrow nut and a wide bridge the outer strings
+                            actaually have a slightly longer scale length.
+                        </dd>
+                    </dl>
+                </dd>
+                <dt id="multiple">multiple</dt>
+                <dd>
+                    <dl>
+                        <dt>first string scale length</dt>
+                        <dd><input type="text" id="inputScaleF" value="25" /></dd>
+                        <dd class="help">
+                            The scale length is the playing/speaking length of the 
+                            string measured from the nut to the bridge. 
+                            It is perhaps more properly twice the distance from the nut to the octave fret. 
+                            Enter the actual scale length of the first (traditional high E) string. 
+                        </dd>
+                        <dt>last string scale length</dt>
+                        <dd><input type="text" id="inputScaleL" value="28" /></dd>
+                        <dd class="help">
+                            The scale length is the playing/speaking length of the 
+                            string measured from the nut to the bridge. 
+                            It is perhaps more properly twice the distance from the nut to the octave fret. 
+                            Enter the actual scale length of the last (traditional low E) string. 
+                        </dd>
+                        <dt>perpendicular fret distance</dt>
+                        <dd><input type="text" id="inputPerp" value="0.5" /></dd>
+                        <dd class="help">
+                            <p>
+                            The perpendicular fret distance
+                            is the ratio of distances along the first and last 
+                            string that fall on a line perpendicular to the midline of the neck. 
+                            This is used to control the angle of the nut/frets/bridge. 
+                            </p>
+                            <p>
+                            Traditionally this property of non-parallelly fretted 
+                            fretboards is measured by assigning a "perpendicular fret".
+                            "Perpendicular distance" avoids two problems with the "perpendicular fret" method. 
+                            First, it is possible that no fret falls into this perpendicular position. 
+                            With "perpendicular distance" we avoid fractional frets.
+                            Second, it is possible and even likely with non-equal temperament fretboards that 
+                            as a fret crosses the fretboard it will fall at different ratios along the strings. 
+                            With "perpendicular distance" we aviod complex calculations 
+                            and have more predictible results.
+                            </p>
+                            <p>
+                            A value of 0 results in a perpendicular nut. 
+                            A value of 1 results in a perpendicular bridge.
+                            The default 0.5 results in a perpendicular octave fret.
+                            To calculate an appropriate value for any fret,
+                            simply divide the distance of the fret from the nut by the total length of the string.
+                            In twelve tone equal temperament the values look like this:
+                            </p>
+                            <pre>
 Fret	P.D.		Fret	P.D.
 1	0.05613		13	0.52806
 2	0.10910		14	0.55455
@@ -278,90 +304,90 @@ Fret	P.D.		Fret	P.D.
 10	0.43877		22	0.71938
 11	0.47027		23	0.73513
 12	0.50000		24	0.75000
-                        </pre>
-                    </dd>
-                </dl>
-            </dd>
-        </dl>
-    </dd>
-    <dt>string width at the nut</dt>
-    <dd><input type="text" id="inputNutWidth" value="1.375" /></dd>
-    <dd class="help">
-        The string width at the nut is the distance along the nut from the center 
-        of the first string to the center of the last string. (Please note, FretFind will space 
-        the remaining strings equally between these two points. Custom string spacings 
-        can be achieved with FretFind using the advanced frontend.)
-    </dd>
-    <dt>string width at the bridge</dt>
-    <dd><input type="text" id="inputBridgeWidth" value="2.125" /></dd>
-    <dd class="help">
-        The string width at the bridge is the distance along the bridge from the center 
-        of the first string to the center of the last string. (Please note, FretFind will space 
-        the remaining strings equally between these two points. Custom string spacings 
-        can be achieved with FretFind using the advanced frontend.)
-    </dd>
-    <dt>fretboard overhang</dt>
-    <dd>
-        <dl id="overhang" class="alternative">
-            <dt id="equal">equal</dt>
-            <dd><input type="text" id="inputOverhangE" value="0.09375" /></dd>
-            <dt id="nutbridge">nut &amp; bridge</dt>
-            <dd>
-                <table>
-                <tr><td>nut</td><td>
-                <input type="text" id="inputOverhangN" value="0.09375" />
-                </td></tr>
-                <tr><td>bridge</td><td>
-                <input type="text" id="inputOverhangB" value="0.09375" />
-                </td></tr>
-                </table>
-            </dd>
-            <dt id="firstlast">first &amp; last</dt>
-            <dd>
-                <table>
-                <tr><td>last</td><td>first</td></tr>
-                <tr><td>
-                <input type="text" id="inputOverhangL" value="0.09375" />
-                </td><td>
-                <input type="text" id="inputOverhangF" value="0.09375" />
-                </td></tr>
-                </table>
-            </dd>
-            <dt id="all">all</dt>
-            <dd>
-                <table>
-                <tr><td> </td><td>last</td><td>first</td></tr>
-                <tr><td>nut</td><td>
-                <input type="text" id="inputOverhangNL" value="0.09375" />
-                </td><td>
-                <input type="text" id="inputOverhangNF" value="0.09375" />
-                </td></tr>
-                <tr><td>bridge</td><td>
-                <input type="text" id="inputOverhangBL" value="0.09375" />
-                </td><td>
-                <input type="text" id="inputOverhangBF" value="0.09375" />
-                </td></tr>
-                </table>
-            </dd>
-        </dl>
-    </dd>
-    <dd class="help">
-        The fretboard overhang is the distance from the center of outer strings to edge of nut or bridge. 
-        There are four input modes for overhang. Equal: you enter a single value and the overhang will be constant.
-        Nut &amp; Bridge: allows you to specify one overhang at the nut and another overhang at the bridge.
-        First &amp; Last: allows you to specify one overhang for the first string and another for the last string.
-        All: you specify an overhang for all four locations seperately.
-        (Please note, in FretFind the first string is shown on the far right 
-        where the high E string would be on a typical right-handed guitar. 
-        The last string is on the far left, where the low E would be found.)
-    </dd>
-    <dt>calculation method</dt>
-    <dd>
-        <dl id="scale" class="alternative">
-            <dt id="et">equal (root 2)</dt>
-            <dd><input type="text" id="inputCalcR" value="12" /></dd>
-            <dt id="scala">just (scala)</dt>
-            <dd>
+                            </pre>
+                        </dd>
+                    </dl>
+                </dd>
+            </dl>
+        </dd>
+        <dt>string width at the nut</dt>
+        <dd><input type="text" id="inputNutWidth" value="1.375" /></dd>
+        <dd class="help">
+            The string width at the nut is the distance along the nut from the center 
+            of the first string to the center of the last string. (Please note, FretFind will space 
+            the remaining strings equally between these two points. Custom string spacings 
+            can be achieved with FretFind using the advanced frontend.)
+        </dd>
+        <dt>string width at the bridge</dt>
+        <dd><input type="text" id="inputBridgeWidth" value="2.125" /></dd>
+        <dd class="help">
+            The string width at the bridge is the distance along the bridge from the center 
+            of the first string to the center of the last string. (Please note, FretFind will space 
+            the remaining strings equally between these two points. Custom string spacings 
+            can be achieved with FretFind using the advanced frontend.)
+        </dd>
+        <dt>fretboard overhang</dt>
+        <dd>
+            <dl id="overhang" class="alternative">
+                <dt id="equal">equal</dt>
+                <dd><input type="text" id="inputOverhangE" value="0.09375" /></dd>
+                <dt id="nutbridge">nut &amp; bridge</dt>
+                <dd>
+                    <table>
+                    <tr><td>nut</td><td>
+                    <input type="text" id="inputOverhangN" value="0.09375" />
+                    </td></tr>
+                    <tr><td>bridge</td><td>
+                    <input type="text" id="inputOverhangB" value="0.09375" />
+                    </td></tr>
+                    </table>
+                </dd>
+                <dt id="firstlast">first &amp; last</dt>
+                <dd>
+                    <table>
+                    <tr><td>last</td><td>first</td></tr>
+                    <tr><td>
+                    <input type="text" id="inputOverhangL" value="0.09375" />
+                    </td><td>
+                    <input type="text" id="inputOverhangF" value="0.09375" />
+                    </td></tr>
+                    </table>
+                </dd>
+                <dt id="all">all</dt>
+                <dd>
+                    <table>
+                    <tr><td> </td><td>last</td><td>first</td></tr>
+                    <tr><td>nut</td><td>
+                    <input type="text" id="inputOverhangNL" value="0.09375" />
+                    </td><td>
+                    <input type="text" id="inputOverhangNF" value="0.09375" />
+                    </td></tr>
+                    <tr><td>bridge</td><td>
+                    <input type="text" id="inputOverhangBL" value="0.09375" />
+                    </td><td>
+                    <input type="text" id="inputOverhangBF" value="0.09375" />
+                    </td></tr>
+                    </table>
+                </dd>
+            </dl>
+        </dd>
+        <dd class="help">
+            The fretboard overhang is the distance from the center of outer strings to edge of nut or bridge. 
+            There are four input modes for overhang. Equal: you enter a single value and the overhang will be constant.
+            Nut &amp; Bridge: allows you to specify one overhang at the nut and another overhang at the bridge.
+            First &amp; Last: allows you to specify one overhang for the first string and another for the last string.
+            All: you specify an overhang for all four locations seperately.
+            (Please note, in FretFind the first string is shown on the far right 
+            where the high E string would be on a typical right-handed guitar. 
+            The last string is on the far left, where the low E would be found.)
+        </dd>
+        <dt>calculation method</dt>
+        <dd>
+            <dl id="scale" class="alternative">
+                <dt id="et">equal (root 2)</dt>
+                <dd><input type="text" id="inputCalcR" value="12" /></dd>
+                <dt id="scala">just (scala)</dt>
+                <dd>
 <textarea rows="17" id="inputCalcS">
 ! 12tet.scl
 !
@@ -381,47 +407,51 @@ Fret	P.D.		Fret	P.D.
 1100.
 2/1
 </textarea>            
-            </dd>
-        </dl>
-    </dd>
-    <dd class="help">
-        The calculation method determins how FretFind calculates fret placement.
-        There are two input modes. Equal: uses the X<sup>th</sup> root of two, a standard
-        method for calculating equal temperaments. You enter the number of tones per octave.
-        Scala: uses a Scala SCL file which allows you to specify 
-        each scale step exactly in either ratios or cents. 
-        If you are interested in creating your own scale, please read this description of the 
-        <a href="http://www.xs4all.nl/~huygensf/scala/scl_format.html">Scala scale file format</a>.
-        Otherwise try a scale from the Scala scale archive, found at the very bottom of the 
-        <a href="http://www.xs4all.nl/~huygensf/scala/downloads.html">Scala download page</a>.
-        You can learn more about Scala at the 
-        <a href="http://www.xs4all.nl/~huygensf/scala/index.html">Scala home page</a>.
-    </dd>
-    <dt>number of frets</dt>
-    <dd><input type="text" id="inputFrets" value="24" /></dd>
-    <dd class="help">
-        This is the number of frets you would like FretFind to calculate.
-        The number of frets must be an integer. 
-    </dd>
-    <dt>number of strings</dt>
-    <dd><input type="text" id="inputStrings" value="6" /></dd>
-    <dd class="help">
-        The number of strings must be an integer. 
-        If you change the number of strings click "Update" to update the tuning section below.
-    </dd>
-    <dt>tuning</dt>
-    <dd id="tuning">
-    </dd>
-    <dd class="help">
-        Enter the scale step (of the scale defined above) to which each string will be tuned.
-        For example a standard guitar in the key of E would be tuned 0, 7, 3, 10, 5, 0.
-        The first string is the string to the far right on the fretboard.
-        This step is not important for the Equal calculation method.
-        Entering a tuning for the Scala calculation method will very likely result in partial frets.
-    </dd>
-</dl><!-- worksheet -->
-<div id="diagram"></div>
-<div id="tables"></div>
+                </dd>
+            </dl>
+        </dd>
+        <dd class="help">
+            The calculation method determins how FretFind calculates fret placement.
+            There are two input modes. Equal: uses the X<sup>th</sup> root of two, a standard
+            method for calculating equal temperaments. You enter the number of tones per octave.
+            Scala: uses a Scala SCL file which allows you to specify 
+            each scale step exactly in either ratios or cents. 
+            If you are interested in creating your own scale, please read this description of the 
+            <a href="http://www.xs4all.nl/~huygensf/scala/scl_format.html">Scala scale file format</a>.
+            Otherwise try a scale from the Scala scale archive, found at the very bottom of the 
+            <a href="http://www.xs4all.nl/~huygensf/scala/downloads.html">Scala download page</a>.
+            You can learn more about Scala at the 
+            <a href="http://www.xs4all.nl/~huygensf/scala/index.html">Scala home page</a>.
+        </dd>
+        <dt>number of frets</dt>
+        <dd><input type="text" id="inputFrets" value="24" /></dd>
+        <dd class="help">
+            This is the number of frets you would like FretFind to calculate.
+            The number of frets must be an integer. 
+        </dd>
+        <dt>number of strings</dt>
+        <dd><input type="text" id="inputStrings" value="6" /></dd>
+        <dd class="help">
+            The number of strings must be an integer. 
+            If you change the number of strings click "Update" to update the tuning section below.
+        </dd>
+        <dt>tuning</dt>
+        <dd id="tuning">
+        </dd>
+        <dd class="help">
+            Enter the scale step (of the scale defined above) to which each string will be tuned.
+            For example a standard guitar in the key of E would be tuned 0, 7, 3, 10, 5, 0.
+            The first string is the string to the far right on the fretboard.
+            This step is not important for the Equal calculation method.
+            Entering a tuning for the Scala calculation method will very likely result in partial frets.
+        </dd>
+    </dl><!-- worksheet -->
+    <div id="diagram"></div>
+    <dl id="downloads">
+        <dt>SVG</dt><dd id="download_svg"></dd>
+    </dl>
+    <div id="tables"></div>
+</div>
 </body>
 </html>
 
