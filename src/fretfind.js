@@ -671,7 +671,7 @@ var ff = (function(){
 		        }
                 pdf.setLineWidth(lineWidth);
 		        pdf.setDrawColor(192);
-		        //pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);		
+		        pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);		
 		        pdf.setDrawColor(0);
 		
 		        //output a line for each string
