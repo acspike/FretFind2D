@@ -520,6 +520,19 @@ var ff = (function(){
         return output.join('');
     }
     
+    var getPDF = function(guitar) {
+        
+    };
+    
+    // TODO: 
+    // - single page PDF
+    // - multi-page PDF
+    // - CSV
+    // - TAB
+    // - minimal DXF
+    // - more compatible DXF borrowing from inkscape?
+    // -
+    
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
     };
