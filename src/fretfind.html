@@ -184,6 +184,19 @@ $(document).ready(function() {
     onChange();
     
     // prepare download links
+    $('#download_pdf').downloadify({
+        width: 100,
+        height: 30,
+        transparent: true,
+        swf: 'libs/downloadify.swf',
+        downloadImage: 'libs/download.png',
+        filename: 'fretboard.pdf',
+        data: function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            return ff.getPDF(guitar);
+        }
+    });
     $('#download_svg').downloadify({
         width: 100,
         height: 30,
@@ -483,6 +496,7 @@ Fret	P.D.		Fret	P.D.
     </dl><!-- worksheet -->
     <div id="diagram"></div>
     <dl id="downloads">
+        <dt>PDF</dt><dd id="download_pdf"></dd>
         <dt>SVG</dt><dd id="download_svg"></dd>
         <dt>CSV</dt><dd id="download_csv"></dd>
         <dt>HTML</dt><dd id="download_html"></dd>
