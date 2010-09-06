@@ -9,7 +9,10 @@ td {
     float: left;
     width: 400px;
 }
-#output {
+#diagram {
+    float: left;
+}
+#tables {
     float: left;
 }
 dt,dd {
@@ -31,4 +34,10 @@ dd.help {
     font-size: 0.8em;
     border: 2px dashed red;
     padding: 10px;
+}
+table.foundfrets {
+	border-collapse: collapse;
+}
+table.foundfrets td {
+	border:1px solid black;padding: 0px 5px 0px 5px;
 }

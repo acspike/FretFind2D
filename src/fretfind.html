@@ -164,6 +164,7 @@ var onChange = function() {
         var guitar = getGuitar();
         guitar = ff.fretGuitar(guitar);
         ff.drawGuitar(paper, guitar);
+        $('#tables').html(ff.getTable(guitar));
     }
 }
 
@@ -173,7 +174,7 @@ $(document).ready(function() {
     $('#inputStrings').change(function(){ff.setTuning('tuning', 'inputStrings', onChange);});
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'inputStrings', onChange);
-    paper = Raphael('output',200,800);
+    paper = Raphael('diagram',200,800);
     processChanges = true;
     onChange();
 });
@@ -419,7 +420,8 @@ Fret	P.D.		Fret	P.D.
         Entering a tuning for the Scala calculation method will very likely result in partial frets.
     </dd>
 </dl><!-- worksheet -->
-<div id="output"></div>
+<div id="diagram"></div>
+<div id="tables"></div>
 </body>
 </html>
 

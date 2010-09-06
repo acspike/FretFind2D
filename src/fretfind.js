@@ -372,6 +372,48 @@ var ff = (function(){
         return guitar;
     }
     
+    var getTable = function(guitar) {
+        var output = '<table class="foundfrets">'+
+            '<tr><td colspan="3">Midline</td></tr>'+
+            '<tr><td>endpoints</td><td>length</td><td>angle</td></tr>'+
+            '<tr><td>'+guitar.midline.toString()+'</td><td>'+
+            guitar.midline.length()+'</td><td>'+guitar.midline.angle()+'</td></tr>'+
+            '</table><br /><br />\n';
+        output += '<table class="foundfrets">';
+        for (var i=0; i<guitar.frets.length; i++) {
+            output += '<tr><td colspan="11">String ' +(i+1)+'</td></tr>'+
+                '<tr><td>#</td><td>to nut</td><td>to fret</td><td>to bridge</td>'+
+                '<td>intersection point</td><td>partial width</td><td>angle</td>'+
+                '<td>mid to nut</td><td>mid to fret</td><td>mid to bridge</td><td>mid intersection</td>'+
+                '</tr>\n';
+            for(var j=0; j<guitar.frets[i].length; j++) {
+                output += '<tr><td>'+(j===0?'n':j)+'</td><td>'+
+                    roundFloat(guitar.frets[i][j].nutDist, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].pFretDist, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].bridgeDist, precision)+
+                    '</td><td>'+
+                    guitar.frets[i][j].intersection.toString()+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].width, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].angle, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].midline_nutDist, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].midline_pFretDist, precision)+
+                    '</td><td>'+
+                    roundFloat(guitar.frets[i][j].midline_bridgeDist, precision)+
+                    '</td><td>'+
+                    guitar.frets[i][j].midline_intersection.toString()+
+                    '</td></tr>';
+            }
+        }
+        output += '</table>';
+        return output;
+    };
+    
     var drawGuitar = function(paper, guitar) {
         var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
         var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
@@ -492,6 +534,7 @@ var ff = (function(){
         //calculate
         fretGuitar: fretGuitar,
         //output
+        getTable: getTable,
         drawGuitar: drawGuitar,
         //form helpers
         getAlt: getAlt,
