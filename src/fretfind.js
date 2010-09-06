@@ -589,12 +589,12 @@ var ff = (function(){
     
     var getPDF = function(guitar) {
         var x = getExtents(guitar);
-        var doc = new jsPDF('P', guitar.units, [x.maxx,x.maxy]);
-        var linewidth = (1/72);
-        if (guitar.units === 'cm') {
-            linewidth = linewidth * 2.54;
-        }
-        doc.setLineWidth(linewidth);
+        var doc = jsPDF('P', guitar.units, [x.maxx,x.maxy]);
+        var unitMult = (guitar.units === 'in') ? 1 : 2.54;
+        var lineWidth = (1/72) * unitMult;
+
+        doc.setLineWidth(lineWidth);
+
         //Output line for each string.
         for (var i=0; i<guitar.strings.length; i++) {
             var string = guitar.strings[i];
@@ -605,9 +605,7 @@ var ff = (function(){
         doc.line(guitar.edge1.end1.x, guitar.edge1.end1.y, guitar.edge1.end2.x, guitar.edge1.end2.y);
         doc.line(guitar.edge2.end1.x, guitar.edge2.end1.y, guitar.edge2.end2.x, guitar.edge2.end2.y);
 
-        //output as SVG path for each fretlet. 
-        //using paths because they allow for the linecap style 
-        //which gives nice rounded ends
+        //Output a line for each fretlet. 
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
                 doc.line(guitar.frets[i][j].fret.end1.x, guitar.frets[i][j].fret.end1.y, 
@@ -618,9 +616,84 @@ var ff = (function(){
         return doc.output();
     };
     
+    var getPDFMultipage = function(guitar, pagesize) {
+        var x = getExtents(guitar);
+        
+        // pagesize is either a4 or letter
+        if (pagesize === 'a4') {
+            var rawPageWidth = 210 / 25.4;
+            var rawPageHeight = 297 / 25.4;
+        } else {
+            pagesize = 'letter';
+            var rawPageWidth = 8.5;
+            var rawPageHeight = 11;
+        }
+        
+        var pdf = jsPDF('P', guitar.units, pagesize);
+        
+        var unitMult = guitar.units === 'in' ? 1 : 2.54;
+        var lineWidth = (1/72) * unitMult;
+        var pageWidth = rawPageWidth * unitMult;
+        var pageHeight = rawPageHeight * unitMult;
+        var pageOverlap = 0.5 * unitMult;
+        var printableHeight = pageHeight - ( 2 * pageOverlap );
+        var printableWidth = pageWidth - ( 2 * pageOverlap );
+        var yPages = Math.ceil( x.height / printableHeight );
+        var xPages = Math.ceil( x.width / printableWidth );
+        
+        for (var i=0; i<yPages; i++) {
+	        for (var j=0; j<xPages; j++) {
+		        var yOffset = (pageHeight * i) - (pageOverlap * (1 + (2 * i)));
+		        var xOffset = (pageWidth * j) - (pageOverlap * (1 + (2 * j)));
+		        if (i>0 || j>0) {
+		            pdf.addPage();
+		        }
+                pdf.setLineWidth(lineWidth);
+		        pdf.setDrawColor(192);
+		        //pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);		
+		        pdf.setDrawColor(0);
+		
+		        //output a line for each string
+		        for (var k=0; k<guitar.strings.length; k++) {
+			        pdf.line(
+			            guitar.strings[k].end1.x - xOffset,
+			            guitar.strings[k].end1.y - yOffset,
+			            guitar.strings[k].end2.x - xOffset,
+			            guitar.strings[k].end2.y - yOffset
+			            );
+		        }
+	
+		        //output a line for each fretboard edge
+	            pdf.line(
+		            guitar.edge1.end1.x - xOffset,
+		            guitar.edge1.end1.y - yOffset,
+		            guitar.edge1.end2.x - xOffset,
+		            guitar.edge1.end2.y - yOffset
+		            );
+		        pdf.line(
+		            guitar.edge2.end1.x - xOffset,
+		            guitar.edge2.end1.y - yOffset,
+		            guitar.edge2.end2.x - xOffset,
+		            guitar.edge2.end2.y - yOffset
+		            );
+	
+		        //output a line for each fret on each string
+		        for (var k=0; k<guitar.frets.length; k++) {
+			        for (var l=0; l<guitar.frets[k].length; l++) {
+			            pdf.line(
+		                    guitar.frets[k][l].fret.end1.x - xOffset,
+		                    guitar.frets[k][l].fret.end1.y - yOffset,
+		                    guitar.frets[k][l].fret.end2.x - xOffset,
+		                    guitar.frets[k][l].fret.end2.y - yOffset
+		                    );
+			        }
+		        }
+	        }
+        }
+        return pdf.output();
+    };
+    
     // TODO: 
-    // - single page PDF
-    // - multi-page PDF
     // - minimal DXF
     // - more compatible DXF borrowing from inkscape?
     
@@ -699,6 +772,7 @@ var ff = (function(){
         getTable: getTable,
         drawGuitar: drawGuitar,
         getPDF: getPDF,
+        getPDFMultipage: getPDFMultipage,
         getSVG: getSVG,
         getHTML: getHTML,
         getDelimited: getDelimited,
