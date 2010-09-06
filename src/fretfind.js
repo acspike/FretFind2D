@@ -513,7 +513,7 @@ var ff = (function(){
         //which gives nice rounded ends
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
-                output.push('<path d="M'+guitar.frets[i][j].fret.toSVGD()+'" class="fret" />\n');
+                output.push('<path d="'+guitar.frets[i][j].fret.toSVGD()+'" class="fret" />\n');
             }
         }
         return output.join('');
