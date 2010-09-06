@@ -462,6 +462,63 @@ var ff = (function(){
         all.scale(scale,scale,0,0);
     };
     
+    var getSVG = function(guitar) {
+        var minx = guitar.edge1.end1.x;
+        var maxx = guitar.edge1.end1.x;
+        var miny = guitar.edge1.end1.y;
+        var maxy = guitar.edge1.end1.y;
+        for (var i=0; i<guitar.meta.length; i++) {
+            minx = Math.min(minx, guitar.meta[i].end1.x);
+            minx = Math.min(minx, guitar.meta[i].end2.x);
+            maxx = Math.max(maxx, guitar.meta[i].end1.x);
+            maxx = Math.max(maxx, guitar.meta[i].end2.x);
+            miny = Math.min(miny, guitar.meta[i].end1.y);
+            miny = Math.min(miny, guitar.meta[i].end2.y);
+            maxy = Math.max(maxy, guitar.meta[i].end1.y);
+            maxy = Math.max(maxy, guitar.meta[i].end2.y);
+        }
+        var height = maxy - miny;
+        var width = maxx - minx;
+        output = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+minx+' '+miny+' '+maxx+' '+maxy+
+                        '" height="'+height+guitar.units+'" width="'+width+guitar.units+'" >\n'];
+        output.push('<defs><style type="text/css"><![CDATA[\n'+
+                    '\t.string{stroke:rgb(0,0,0);stroke-width:0.2%;}\n'+
+                    '\t.meta{stroke:rgb(221,221,221);stroke-width:0.2%;}\n'+
+                    '\t.edge{stroke:rgb(0,0,255);stroke-width:0.2%;}\n'+
+                    '\t.fret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.2%;}\n'+
+                    ']'+']></style></defs>\n');
+        //Output SVG line elements for each string.
+        for (var i=0; i<guitar.strings.length; i++) {
+            var string = guitar.strings[i];
+            output.push('<line x1="'+string.end1.x+'" x2="'+string.end2.x+
+                '" y1="'+string.end1.y+'" y2="'+string.end2.y+'"'+
+                ' class="string" />\n');
+        }
+        for (var i=0; i<guitar.meta.length; i++) {
+            var meta = guitar.meta[i];
+            output.push('<line x1="'+meta.end1.x+'" x2="'+meta.end2.x+
+                '" y1="'+meta.end1.y+'" y2="'+meta.end2.y+'"'+
+                ' class="meta" />\n');
+        }
+        //Output SVG line elements for each fretboard edge
+        output.push('<line x1="'+guitar.edge1.end1.x+'" x2="'+guitar.edge1.end2.x+
+            '" y1="'+guitar.edge1.end1.y+'" y2="'+guitar.edge1.end2.y,'"'+
+            ' class="edge" />\n');
+        output.push('<line x1="'+guitar.edge2.end1.x+'" x2="'+guitar.edge2.end2.x+
+            '" y1="'+guitar.edge2.end1.y+'" y2="'+guitar.edge2.end2.y,'"'+
+            ' class="edge" />\n');
+
+        //output as SVG path for each fretlet. 
+        //using paths because they allow for the linecap style 
+        //which gives nice rounded ends
+        for (var i=0; i<guitar.frets.length; i++) {
+            for (var j=0; j<guitar.frets[i].length; j++) {
+                output.push('<path d="M'+guitar.frets[i][j].fret.toSVGD()+'" class="fret" />\n');
+            }
+        }
+        return output.join('');
+    }
+    
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
     };
@@ -536,6 +593,7 @@ var ff = (function(){
         //output
         getTable: getTable,
         drawGuitar: drawGuitar,
+        getSVG: getSVG,
         //form helpers
         getAlt: getAlt,
         getStr: getStr,
