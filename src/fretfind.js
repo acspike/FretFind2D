@@ -715,8 +715,40 @@ var ff = (function(){
     };
     
     // TODO: 
-    // - minimal DXF
     // - more compatible DXF borrowing from inkscape?
+    var getDXF = function(guitar) {
+        //References: Minimum Requirements for Creating a DXF File of a 3D Model By Paul Bourke
+        var seg2dxf = function(seg) {
+            return '0\nLINE\n8\n2\n62\n4\n10\n'+
+                seg.end1.x+'\n20\n'+
+                seg.end1.y+'\n30\n0\n11\n'+
+                seg.end2.x+'\n21\n'+
+                seg.end2.y+'\n31\n0\n';
+        };
+        var x = getExtents(guitar);
+        var output = [];
+        output.push('999\nDXF created by FretFind2D\n');
+        output.push('0\nSECTION\n2\nENTITIES\n');
+        
+        //Output line for each string.
+        for (var i=0; i<guitar.strings.length; i++) {
+            output.push(seg2dxf(guitar.strings[i]));
+        }
+        
+        //Output line for each fretboard edge
+        output.push(seg2dxf(guitar.edge1));
+        output.push(seg2dxf(guitar.edge2));
+
+        //Output a line for each fretlet. 
+        for (var i=0; i<guitar.frets.length; i++) {
+            for (var j=0; j<guitar.frets[i].length; j++) {
+                output.push(seg2dxf(guitar.frets[i][j].fret));
+            }
+        }
+        output.push('0\nENDSEC\n0\nEOF\n');
+        
+        return output.join('');
+    };
     
     var getAlt = function(id) {
         return $('#'+id).find('dt.selected-alt').attr('id');
@@ -794,6 +826,7 @@ var ff = (function(){
         drawGuitar: drawGuitar,
         getPDF: getPDF,
         getPDFMultipage: getPDFMultipage,
+        getDXF: getDXF,
         getSVG: getSVG,
         getHTML: getHTML,
         getDelimited: getDelimited,
