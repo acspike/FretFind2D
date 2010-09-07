@@ -174,7 +174,7 @@ var getGuitar = function() {
         fret_count: frets,
         units: units
     };
-}
+};
 
 
 //surface for drawing fretboard
@@ -188,7 +188,7 @@ var onChange = function() {
         ff.drawGuitar(paper, guitar);
         $('#tables').html(ff.getTable(guitar));
     }
-}
+};
 
 $(document).ready(function() {
     ff.initHelp('worksheet');
