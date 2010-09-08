@@ -45,7 +45,7 @@ var getGuitar = function() {
     var nutWidth = ff.getFlt('nutWidth');
     var bridgeWidth = ff.getFlt('bridgeWidth');
     var strings = ff.getInt('numStrings');
-    var units = $("input:checked[@name='units']").val();
+    var units = $("input:checked[name='units']").val();
 
     var frets = ff.getInt('numFrets');
     var tuning = ff.getTuning('tuning');
@@ -178,6 +178,20 @@ var getGuitar = function() {
     };
 };
 
+var getLink = function() {
+    var params = {};
+    $('#worksheet').find('input[id], textarea[id]').each(function(index,item){
+        var id = $(item).attr('id');
+        params[id] = $(item).val();
+    });
+    params.t = ff.getTuning('tuning');
+    params.u = $("input:checked[name='units']").val();
+    params.sl = ff.getAlt('length');
+    params.scale = ff.getAlt('scale');
+    params.o = ff.getAlt('overhang');
+    var location = window.location.toString().replace(/#.*/,'');
+    return location+'#'+$.param(params);
+};
 
 //surface for drawing fretboard
 var paper;
@@ -189,7 +203,23 @@ var onChange = function() {
         guitar = ff.fretGuitar(guitar);
         ff.drawGuitar(paper, guitar);
         $('#tables').html(ff.getTable(guitar));
+        $('#bookmark').attr('href', getLink());
     }
+};
+
+var updateFormFromHash = function() {
+    var params = $.deparam.fragment();
+    $('#worksheet').find('input[id], textarea[id]').each(function(index,item){
+        var id = $(item).attr('id');
+        if (params.hasOwnProperty(id)){
+            $(item).val(params[id]);
+        }
+    });
+    ff.setTuning('tuning','numStrings', onChange, (params['t'] || []));
+    $("input[name='units']").filter("[value='"+(params['u']||'in')+"']").click();
+    $('#'+params.sl).click();
+    $('#'+params.scale).click();
+    $('#'+params.o).click();
 };
 
 $(document).ready(function() {
@@ -199,6 +229,7 @@ $(document).ready(function() {
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'numStrings', onChange);
     paper = Raphael('diagram',200,800);
+    updateFormFromHash();
     processChanges = true;
     onChange();
     
@@ -541,6 +572,7 @@ Fret	P.D.		Fret	P.D.
     </dl><!-- worksheet -->
     <div id="diagram"></div>
     <dl id="downloads">
+        <dt>Link</dt><dd><a href="#" id="bookmark">Link to this design</a></dd>
         <dt>DXF</dt><dd id="download_dxf"></dd>
         <dt>PDF (multi-page)</dt><dd id="download_pdfm"></dd>
         <dt>PDF (single page)</dt><dd id="download_pdf"></dd>

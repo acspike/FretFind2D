@@ -782,9 +782,11 @@ var ff = (function(){
         $('#'+id+' > input').each(function(_,item){tunings.push(parseInt(item.value, 10));});
         return tunings;
     };
-    var setTuning = function(tuning_id, string_count_id, change_callback) {
+    var setTuning = function(tuning_id, string_count_id, change_callback, tunings) {
         var strings = getInt(string_count_id);
-        var tunings = getTuning(tuning_id);
+        if (typeof tunings === 'undefined') {
+            tunings = getTuning(tuning_id);
+        }
         var output = '';
         for (var i=0; i<strings; i++) {
             output += 'string '+(i+1)+': <input type="text" value="'+(tunings[i] || 0)+'" /><br />';
