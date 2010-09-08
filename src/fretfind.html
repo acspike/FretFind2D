@@ -73,7 +73,7 @@ var getGuitar = function() {
 		    break;
     }
     var scale;
-    if (ff.getAlt('scale')=='et') {
+    if (ff.getAlt('scale') === 'et') {
         var tones = ff.getFlt('root');
         scale = ff.etScale(tones,2);
     } else {
@@ -105,7 +105,7 @@ var getGuitar = function() {
     var ldeltax = sbxl - snxl;
     var fdeltay;
     var ldeltay;
-    if (lengthMode=='single') {
+    if (lengthMode === 'single') {
         fdeltay = ldeltay = scaleLength;
     } else {
         fdeltay = Math.sqrt((scaleLengthF * scaleLengthF) - (fdeltax * fdeltax));
@@ -116,7 +116,7 @@ var getGuitar = function() {
     var first = new ff.Segment(new ff.Point(snxf, 0), new ff.Point(sbxf, fdeltay));
     var last = new ff.Segment(new ff.Point(snxl, 0), new ff.Point(sbxl, ldeltay));
 
-    if (lengthMode=='multiple') {
+    if (lengthMode === 'multiple') {
         //translate so that perpendicular distance lines up
         var fperp = perp * fdeltay;
         var lperp = perp * ldeltay;
@@ -130,7 +130,7 @@ var getGuitar = function() {
     var nut = new ff.Segment(first.end1.copy(), last.end1.copy());
     var bridge = new ff.Segment(first.end2.copy(), last.end2.copy());
 
-    if (lengthMode=='multiple') {
+    if (lengthMode === 'multiple') {
         //overhang measurements are now converted from delta x to along line lengths
         oNF = (oNF * nut.length()) / nutWidth;
         oNL = (oNL * nut.length()) / nutWidth;
