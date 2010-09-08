@@ -36,16 +36,17 @@
 // based upon form values
 var getGuitar = function() {
     //get form values
-    var scaleLength = ff.getFlt('inputScale');
-    var scaleLengthF = ff.getFlt('inputScaleF');
-    var scaleLengthL = ff.getFlt('inputScaleL');
-    var perp = ff.getFlt('inputPerp');
-    var nutWidth = ff.getFlt('inputNutWidth');
-    var bridgeWidth = ff.getFlt('inputBridgeWidth');
-    var strings = ff.getInt('inputStrings');
-    var units = $("input:checked[@name='inputUnits']").val();
+    var lengthMode = ff.getAlt('length');
+    var scaleLength = ff.getFlt('len');
+    var scaleLengthF = ff.getFlt('lenF');
+    var scaleLengthL = ff.getFlt('lenL');
+    var perp = ff.getFlt('pDist');
+    var nutWidth = ff.getFlt('nutWidth');
+    var bridgeWidth = ff.getFlt('bridgeWidth');
+    var strings = ff.getInt('numStrings');
+    var units = $("input:checked[@name='units']").val();
 
-    var frets = ff.getInt('inputFrets');
+    var frets = ff.getInt('numFrets');
     var tuning = ff.getTuning('tuning');
     var oNF;
     var oNL;
@@ -53,29 +54,29 @@ var getGuitar = function() {
     var oBL;
     switch (ff.getAlt('overhang')) {
 	    case 'equal':
-		    oNF = oNL = oBF = oBL = ff.getFlt('inputOverhangE');
+		    oNF = oNL = oBF = oBL = ff.getFlt('oE');
 		    break;
 	    case 'nutbridge':
-		    oNF = oNL = ff.getFlt('inputOverhangN');
-		    oBF = oBL = ff.getFlt('inputOverhangB');
+		    oNF = oNL = ff.getFlt('oN');
+		    oBF = oBL = ff.getFlt('oB');
 		    break;
 	    case 'firstlast':
-		    oNF = oBF = ff.getFlt('inputOverhangF');
-		    oBL = oNL = ff.getFlt('inputOverhangL');
+		    oNF = oBF = ff.getFlt('oF');
+		    oBL = oNL = ff.getFlt('oL');
 		    break;
 	    case 'all':
-		    oNF = ff.getFlt('inputOverhangNF');
-		    oBF = ff.getFlt('inputOverhangBF');
-		    oNL = ff.getFlt('inputOverhangNL');
-		    oBL = ff.getFlt('inputOverhangBL');
+		    oNF = ff.getFlt('oNF');
+		    oBF = ff.getFlt('oBF');
+		    oNL = ff.getFlt('oNL');
+		    oBL = ff.getFlt('oBL');
 		    break;
     }
     var scale;
     if (ff.getAlt('scale')=='et') {
-        var tones = ff.getFlt('inputCalcR');
+        var tones = ff.getFlt('root');
         scale = ff.etScale(tones,2);
     } else {
-        var scala = ff.getStr('inputCalcS');
+        var scala = ff.getStr('scl');
         scale = ff.scalaScale(scala);
     }
     
@@ -103,7 +104,7 @@ var getGuitar = function() {
     var ldeltax = sbxl - snxl;
     var fdeltay;
     var ldeltay;
-    if (ff.getAlt('length')=='single') {
+    if (lengthMode=='single') {
         fdeltay = ldeltay = scaleLength;
     } else {
         fdeltay = Math.sqrt((scaleLengthF * scaleLengthF) - (fdeltax * fdeltax));
@@ -114,7 +115,7 @@ var getGuitar = function() {
     var first = new ff.Segment(new ff.Point(snxf, 0), new ff.Point(sbxf, fdeltay));
     var last = new ff.Segment(new ff.Point(snxl, 0), new ff.Point(sbxl, ldeltay));
 
-    if (ff.getAlt('length')=='multiple') {
+    if (lengthMode=='multiple') {
         //translate so that perpendicular distance lines up
         var fperp = perp * fdeltay;
         var lperp = perp * ldeltay;
@@ -128,7 +129,7 @@ var getGuitar = function() {
     var nut = new ff.Segment(first.end1.copy(), last.end1.copy());
     var bridge = new ff.Segment(first.end2.copy(), last.end2.copy());
 
-    if (ff.getAlt('length')=='multiple') {
+    if (lengthMode=='multiple') {
         //overhang measurements are now converted from delta x to along line lengths
         oNF = (oNF * nut.length()) / nutWidth;
         oNL = (oNL * nut.length()) / nutWidth;
@@ -193,9 +194,9 @@ var onChange = function() {
 $(document).ready(function() {
     ff.initHelp('worksheet');
     ff.initAlternatives('worksheet', onChange);
-    $('#inputStrings').change(function(){ff.setTuning('tuning', 'inputStrings', onChange);});
+    $('#numStrings').change(function(){ff.setTuning('tuning', 'numStrings', onChange);});
     $('#worksheet').find('input, textarea').change(onChange);
-    ff.setTuning('tuning', 'inputStrings', onChange);
+    ff.setTuning('tuning', 'numStrings', onChange);
     paper = Raphael('diagram',200,800);
     processChanges = true;
     onChange();
@@ -322,7 +323,7 @@ as well as fretboards for instruments that play just or meantone scales.
                 <dd>
                     <dl>
                         <dt>fundamental scale length</dt>
-                        <dd><input type="text" id="inputScale" value="25" /></dd>
+                        <dd><input type="text" id="len" value="25" /></dd>
                         <dd class="help">
                             The fundamental scale length is the length of a line drawn from 
                             the middle of the nut to the middle of the bridge. 
@@ -338,7 +339,7 @@ as well as fretboards for instruments that play just or meantone scales.
                 <dd>
                     <dl>
                         <dt>first string scale length</dt>
-                        <dd><input type="text" id="inputScaleF" value="25" /></dd>
+                        <dd><input type="text" id="lenF" value="25" /></dd>
                         <dd class="help">
                             The scale length is the playing/speaking length of the 
                             string measured from the nut to the bridge. 
@@ -346,7 +347,7 @@ as well as fretboards for instruments that play just or meantone scales.
                             Enter the actual scale length of the first (traditional high E) string. 
                         </dd>
                         <dt>last string scale length</dt>
-                        <dd><input type="text" id="inputScaleL" value="28" /></dd>
+                        <dd><input type="text" id="lenL" value="28" /></dd>
                         <dd class="help">
                             The scale length is the playing/speaking length of the 
                             string measured from the nut to the bridge. 
@@ -354,7 +355,7 @@ as well as fretboards for instruments that play just or meantone scales.
                             Enter the actual scale length of the last (traditional low E) string. 
                         </dd>
                         <dt>perpendicular fret distance</dt>
-                        <dd><input type="text" id="inputPerp" value="0.5" /></dd>
+                        <dd><input type="text" id="pDist" value="0.5" /></dd>
                         <dd class="help">
                             <p>
                             The perpendicular fret distance
@@ -402,7 +403,7 @@ Fret	P.D.		Fret	P.D.
             </dl>
         </dd>
         <dt>string width at the nut</dt>
-        <dd><input type="text" id="inputNutWidth" value="1.375" /></dd>
+        <dd><input type="text" id="nutWidth" value="1.375" /></dd>
         <dd class="help">
             The string width at the nut is the distance along the nut from the center 
             of the first string to the center of the last string. (Please note, FretFind will space 
@@ -410,7 +411,7 @@ Fret	P.D.		Fret	P.D.
             can be achieved with FretFind using the advanced frontend.)
         </dd>
         <dt>string width at the bridge</dt>
-        <dd><input type="text" id="inputBridgeWidth" value="2.125" /></dd>
+        <dd><input type="text" id="bridgeWidth" value="2.125" /></dd>
         <dd class="help">
             The string width at the bridge is the distance along the bridge from the center 
             of the first string to the center of the last string. (Please note, FretFind will space 
@@ -421,15 +422,15 @@ Fret	P.D.		Fret	P.D.
         <dd>
             <dl id="overhang" class="alternative">
                 <dt id="equal">equal</dt>
-                <dd><input type="text" id="inputOverhangE" value="0.09375" /></dd>
+                <dd><input type="text" id="oE" value="0.09375" /></dd>
                 <dt id="nutbridge">nut &amp; bridge</dt>
                 <dd>
                     <table>
                     <tr><td>nut</td><td>
-                    <input type="text" id="inputOverhangN" value="0.09375" />
+                    <input type="text" id="oN" value="0.09375" />
                     </td></tr>
                     <tr><td>bridge</td><td>
-                    <input type="text" id="inputOverhangB" value="0.09375" />
+                    <input type="text" id="oB" value="0.09375" />
                     </td></tr>
                     </table>
                 </dd>
@@ -438,9 +439,9 @@ Fret	P.D.		Fret	P.D.
                     <table>
                     <tr><td>last</td><td>first</td></tr>
                     <tr><td>
-                    <input type="text" id="inputOverhangL" value="0.09375" />
+                    <input type="text" id="oL" value="0.09375" />
                     </td><td>
-                    <input type="text" id="inputOverhangF" value="0.09375" />
+                    <input type="text" id="oF" value="0.09375" />
                     </td></tr>
                     </table>
                 </dd>
@@ -449,14 +450,14 @@ Fret	P.D.		Fret	P.D.
                     <table>
                     <tr><td> </td><td>last</td><td>first</td></tr>
                     <tr><td>nut</td><td>
-                    <input type="text" id="inputOverhangNL" value="0.09375" />
+                    <input type="text" id="oNL" value="0.09375" />
                     </td><td>
-                    <input type="text" id="inputOverhangNF" value="0.09375" />
+                    <input type="text" id="oNF" value="0.09375" />
                     </td></tr>
                     <tr><td>bridge</td><td>
-                    <input type="text" id="inputOverhangBL" value="0.09375" />
+                    <input type="text" id="oBL" value="0.09375" />
                     </td><td>
-                    <input type="text" id="inputOverhangBF" value="0.09375" />
+                    <input type="text" id="oBF" value="0.09375" />
                     </td></tr>
                     </table>
                 </dd>
@@ -476,10 +477,10 @@ Fret	P.D.		Fret	P.D.
         <dd>
             <dl id="scale" class="alternative">
                 <dt id="et">equal (root 2)</dt>
-                <dd><input type="text" id="inputCalcR" value="12" /></dd>
+                <dd><input type="text" id="root" value="12" /></dd>
                 <dt id="scala">just (scala)</dt>
                 <dd>
-<textarea rows="17" id="inputCalcS">
+<textarea rows="17" id="scl">
 ! 12tet.scl
 !
 12 tone equal temperament
@@ -515,13 +516,13 @@ Fret	P.D.		Fret	P.D.
             <a href="http://www.huygens-fokker.org/scala/">Scala home page</a>.
         </dd>
         <dt>number of frets</dt>
-        <dd><input type="text" id="inputFrets" value="24" /></dd>
+        <dd><input type="text" id="numFrets" value="24" /></dd>
         <dd class="help">
             This is the number of frets you would like FretFind to calculate.
             The number of frets must be an integer. 
         </dd>
         <dt>number of strings</dt>
-        <dd><input type="text" id="inputStrings" value="6" /></dd>
+        <dd><input type="text" id="numStrings" value="6" /></dd>
         <dd class="help">
             The number of strings must be an integer. 
             If you change the number of strings click "Update" to update the tuning section below.
