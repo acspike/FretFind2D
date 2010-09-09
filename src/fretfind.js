@@ -471,8 +471,8 @@ var ff = (function(){
         // calculate scale
         var gw = edges.getBBox().width;
         var gh = edges.getBBox().height;
-        var pw = paper.width;
-        var ph = paper.height;
+        var pw = parseInt(paper.canvas.style.width) || paper.width;
+        var ph = parseInt(paper.canvas.style.height) || paper.height;
         var scale = Math.min(pw/gw,ph/gh);
         all.scale(scale,scale,0,0);
     };
