@@ -44,3 +44,9 @@ table.foundfrets {
 table.foundfrets td {
 	border:1px solid black;padding: 0px 5px 0px 5px;
 }
+.help dt {
+    font-weight: bold;
+}
+.help dd {
+    padding-left: 10px;
+}

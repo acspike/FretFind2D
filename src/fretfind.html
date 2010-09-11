@@ -357,13 +357,16 @@ as well as fretboards for instruments that play just or meantone scales.
                         <dt>fundamental scale length</dt>
                         <dd><input type="text" id="len" value="25" /></dd>
                         <dd class="help">
+                            The scale length is the playing/speaking length of the 
+                            string measured from the nut to the bridge. 
+                            It is perhaps more properly twice the distance from the nut to the octave fret.
                             The fundamental scale length is the length of a line drawn from 
                             the middle of the nut to the middle of the bridge. 
-                            In this FretFind frontend that line is the perpendicular 
+                            For single scale length instruments that line is the perpendicular 
                             bisector of both the nut and the bridge.
-                            I call this length "fundamental" because the on a standard instrument 
+                            I call this length "fundamental" because on a standard instrument 
                             with a narrow nut and a wide bridge the outer strings
-                            actaually have a slightly longer scale length.
+                            actually have a slightly longer scale length.
                         </dd>
                     </dl>
                 </dd>
@@ -393,18 +396,18 @@ as well as fretboards for instruments that play just or meantone scales.
                             The perpendicular fret distance
                             is the ratio of distances along the first and last 
                             string that fall on a line perpendicular to the midline of the neck. 
-                            This is used to control the angle of the nut/frets/bridge. 
+                            This is used to control the angle of the nut, frets and bridge. 
                             </p>
                             <p>
-                            Traditionally this property of non-parallelly fretted 
+                            Traditionally this property of non-parallel-ly fretted 
                             fretboards is measured by assigning a "perpendicular fret".
                             "Perpendicular distance" avoids two problems with the "perpendicular fret" method. 
                             First, it is possible that no fret falls into this perpendicular position. 
                             With "perpendicular distance" we avoid fractional frets.
                             Second, it is possible and even likely with non-equal temperament fretboards that 
                             as a fret crosses the fretboard it will fall at different ratios along the strings. 
-                            With "perpendicular distance" we aviod complex calculations 
-                            and have more predictible results.
+                            With "perpendicular distance" we avoid complex calculations 
+                            and have more predictable results.
                             </p>
                             <p>
                             A value of 0 results in a perpendicular nut. 
@@ -438,17 +441,27 @@ Fret	P.D.		Fret	P.D.
         <dd><input type="text" id="nutWidth" value="1.375" /></dd>
         <dd class="help">
             The string width at the nut is the distance along the nut from the center 
-            of the first string to the center of the last string. (Please note, FretFind will space 
-            the remaining strings equally between these two points. Custom string spacings 
-            can be achieved with FretFind using the advanced frontend.)
+            of the first string to the center of the last string.
+            I'm using delta x distance 
+            (distance measured along a line drawn perpendicular to the neck's midline)
+            because I think that is what 
+            you would feel as the width if you were playing an instrument with multiple scale lengths. 
+            It also makes the calculation easier.
+            (Please note, FretFind will space 
+            the remaining strings equally between these two points.)
         </dd>
         <dt>string width at the bridge</dt>
         <dd><input type="text" id="bridgeWidth" value="2.125" /></dd>
         <dd class="help">
             The string width at the bridge is the distance along the bridge from the center 
-            of the first string to the center of the last string. (Please note, FretFind will space 
-            the remaining strings equally between these two points. Custom string spacings 
-            can be achieved with FretFind using the advanced frontend.)
+            of the first string to the center of the last string.            
+            I'm using delta x distance 
+            (distance measured along a line drawn perpendicular to the neck's midline)
+            because I think that is what 
+            you would feel as the width if you were playing an instrument with multiple scale lengths. 
+            It also makes the calculation easier.
+            (Please note, FretFind will space 
+            the remaining strings equally between these two points.)
         </dd>
         <dt>fretboard overhang</dt>
         <dd>
@@ -497,10 +510,15 @@ Fret	P.D.		Fret	P.D.
         </dd>
         <dd class="help">
             The fretboard overhang is the distance from the center of outer strings to edge of nut or bridge. 
-            There are four input modes for overhang. Equal: you enter a single value and the overhang will be constant.
-            Nut &amp; Bridge: allows you to specify one overhang at the nut and another overhang at the bridge.
-            First &amp; Last: allows you to specify one overhang for the first string and another for the last string.
-            All: you specify an overhang for all four locations seperately.
+            For fretboards with multiple scale lengths this is calculated as delta x distance, 
+            distance measured along a line drawn perpendicular to the neck's midline.
+            There are four input modes for overhang. 
+            <dl>
+            <dt>Equal:</dt><dd>you enter a single value and the overhang will be constant.</dd>
+            <dt>Nut &amp; Bridge:</dt><dd>allows you to specify one overhang at the nut and another overhang at the bridge.</dd>
+            <dt>First &amp; Last:</dt><dd>allows you to specify one overhang for the first string and another for the last string.</dd>
+            <dt>All:</dt><dd>you specify an overhang for all four locations separately.</dd>
+            </dl>
             (Please note, in FretFind the first string is shown on the far right 
             where the high E string would be on a typical right-handed guitar. 
             The last string is on the far left, where the low E would be found.)
@@ -535,17 +553,20 @@ Fret	P.D.		Fret	P.D.
             </dl>
         </dd>
         <dd class="help">
-            The calculation method determins how FretFind calculates fret placement.
-            There are two input modes. Equal: uses the X<sup>th</sup> root of two, a standard
-            method for calculating equal temperaments. You enter the number of tones per octave.
-            Scala: uses a Scala SCL file which allows you to specify 
+            The calculation method determines how FretFind calculates fret placement.
+            There are two input modes. 
+            <dl>
+            <dt>Equal:</dt><dd>uses the X<sup>th</sup> root of two, a standard
+            method for calculating equal temperaments. You enter the number of tones per octave.</dd>
+            <dt>Scala:</dt><dd>uses a Scala SCL file which allows you to specify 
             each scale step exactly in either ratios or cents. 
             If you are interested in creating your own scale, please read this description of the 
             <a href="http://www.huygens-fokker.org/scala/scl_format.html">Scala scale file format</a>.
             Otherwise try a scale from the Scala scale archive, found at the very bottom of the 
             <a href="http://www.huygens-fokker.org/scala/downloads.html">Scala download page</a>.
             You can learn more about Scala at the 
-            <a href="http://www.huygens-fokker.org/scala/">Scala home page</a>.
+            <a href="http://www.huygens-fokker.org/scala/">Scala home page</a>.</dd>
+            </dl>
         </dd>
         <dt>number of frets</dt>
         <dd><input type="text" id="numFrets" value="24" /></dd>
@@ -557,7 +578,7 @@ Fret	P.D.		Fret	P.D.
         <dd><input type="text" id="numStrings" value="6" /></dd>
         <dd class="help">
             The number of strings must be an integer. 
-            If you change the number of strings click "Update" to update the tuning section below.
+            If you change the number of strings be sure to update the tuning section below (only useful with non-equal temperament scales).
         </dd>
         <dt>tuning</dt>
         <dd id="tuning">
