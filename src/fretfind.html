@@ -269,8 +269,9 @@ $(document).ready(function() {
         filename: 'fretboard.pdf',
         data: function(){
             var guitar = getGuitar();
+            var pagesize = $("input:checked[name='pdfm_pagesize']").val();
             guitar = ff.fretGuitar(guitar);
-            return ff.getPDFMultipage(guitar, 'letter');
+            return ff.getPDFMultipage(guitar, pagesize);
         }
     });
     $('#download_svg').downloadify({
@@ -595,7 +596,12 @@ Fret	P.D.		Fret	P.D.
     <dl id="downloads">
         <dt>Link</dt><dd><a href="#" id="bookmark">Link to this design</a></dd>
         <dt>DXF</dt><dd id="download_dxf"></dd>
-        <dt>PDF (multi-page)</dt><dd id="download_pdfm"></dd>
+        <dt>PDF (multi-page)</dt>
+        <dd>
+            <label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label>
+            <label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label>
+        </dd>
+        <dd id="download_pdfm"></dd>
         <dt>PDF (single page)</dt><dd id="download_pdf"></dd>
         <dt>SVG</dt><dd id="download_svg"></dd>
         <dt>CSV</dt><dd id="download_csv"></dd>
