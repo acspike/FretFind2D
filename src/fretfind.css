@@ -50,3 +50,6 @@ table.foundfrets td {
 .help dd {
     padding-left: 10px;
 }
+input {
+    width: 100px;
+}
