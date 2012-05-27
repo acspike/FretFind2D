@@ -612,6 +612,9 @@ var ff = (function(){
 
         doc.setLineWidth(lineWidth);
 
+        //Output center line
+        doc.line(guitar.center + margin, 0, guitar.center + margin, x.maxy + (2 * margin));
+
         //Output line for each string.
         for (var i=0; i<guitar.strings.length; i++) {
             var string = guitar.strings[i];
@@ -689,6 +692,9 @@ var ff = (function(){
 		        pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);		
 		        pdf.setDrawColor(0);
 		
+                //Output center line
+                pdf.line(guitar.center - xOffset, 0, guitar.center - xOffset, pageHeight);
+
 		        //output a line for each string
 		        for (var k=0; k<guitar.strings.length; k++) {
 			        pdf.line(
