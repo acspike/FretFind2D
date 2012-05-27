@@ -330,7 +330,7 @@ var ff = (function(){
                     (ratio * (guitar.strings[i].end2.x - frets[j-1].intersection.x));
                 var y = frets[j-1].intersection.y+
                     (ratio * (guitar.strings[i].end2.y - frets[j-1].intersection.y));
-                frets[j].intersection = new Point(x, y);	
+                frets[j].intersection = new Point(x, y);    
                 var temp = new Segment(guitar.strings[i].end2, frets[j].intersection);
                 frets[j].bridgeDist = temp.length();
                 temp = new Segment(guitar.strings[i].end1, frets[j].intersection);
@@ -681,56 +681,56 @@ var ff = (function(){
         var xPages = Math.ceil( x.width / printableWidth );
         
         for (var i=0; i<yPages; i++) {
-	        for (var j=0; j<xPages; j++) {
-		        var yOffset = (pageHeight * i) - (pageOverlap * (1 + (2 * i)));
-		        var xOffset = (pageWidth * j) - (pageOverlap * (1 + (2 * j)));
-		        if (i>0 || j>0) {
-		            pdf.addPage();
-		        }
+            for (var j=0; j<xPages; j++) {
+                var yOffset = (pageHeight * i) - (pageOverlap * (1 + (2 * i)));
+                var xOffset = (pageWidth * j) - (pageOverlap * (1 + (2 * j)));
+                if (i>0 || j>0) {
+                    pdf.addPage();
+                }
                 pdf.setLineWidth(lineWidth);
-		        pdf.setDrawColor(192);
-		        pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);		
-		        pdf.setDrawColor(0);
-		
+                pdf.setDrawColor(192);
+                pdf.rect(pageOverlap, pageOverlap, printableWidth, printableHeight);        
+                pdf.setDrawColor(0);
+        
                 //Output center line
                 pdf.line(guitar.center - xOffset, 0, guitar.center - xOffset, pageHeight);
 
-		        //output a line for each string
-		        for (var k=0; k<guitar.strings.length; k++) {
-			        pdf.line(
-			            guitar.strings[k].end1.x - xOffset,
-			            guitar.strings[k].end1.y - yOffset,
-			            guitar.strings[k].end2.x - xOffset,
-			            guitar.strings[k].end2.y - yOffset
-			            );
-		        }
-	
-		        //output a line for each fretboard edge
-	            pdf.line(
-		            guitar.edge1.end1.x - xOffset,
-		            guitar.edge1.end1.y - yOffset,
-		            guitar.edge1.end2.x - xOffset,
-		            guitar.edge1.end2.y - yOffset
-		            );
-		        pdf.line(
-		            guitar.edge2.end1.x - xOffset,
-		            guitar.edge2.end1.y - yOffset,
-		            guitar.edge2.end2.x - xOffset,
-		            guitar.edge2.end2.y - yOffset
-		            );
-	
-		        //output a line for each fret on each string
-		        for (var k=0; k<guitar.frets.length; k++) {
-			        for (var l=0; l<guitar.frets[k].length; l++) {
-			            pdf.line(
-		                    guitar.frets[k][l].fret.end1.x - xOffset,
-		                    guitar.frets[k][l].fret.end1.y - yOffset,
-		                    guitar.frets[k][l].fret.end2.x - xOffset,
-		                    guitar.frets[k][l].fret.end2.y - yOffset
-		                    );
-			        }
-		        }
-	        }
+                //output a line for each string
+                for (var k=0; k<guitar.strings.length; k++) {
+                    pdf.line(
+                        guitar.strings[k].end1.x - xOffset,
+                        guitar.strings[k].end1.y - yOffset,
+                        guitar.strings[k].end2.x - xOffset,
+                        guitar.strings[k].end2.y - yOffset
+                        );
+                }
+    
+                //output a line for each fretboard edge
+                pdf.line(
+                    guitar.edge1.end1.x - xOffset,
+                    guitar.edge1.end1.y - yOffset,
+                    guitar.edge1.end2.x - xOffset,
+                    guitar.edge1.end2.y - yOffset
+                    );
+                pdf.line(
+                    guitar.edge2.end1.x - xOffset,
+                    guitar.edge2.end1.y - yOffset,
+                    guitar.edge2.end2.x - xOffset,
+                    guitar.edge2.end2.y - yOffset
+                    );
+    
+                //output a line for each fret on each string
+                for (var k=0; k<guitar.frets.length; k++) {
+                    for (var l=0; l<guitar.frets[k].length; l++) {
+                        pdf.line(
+                            guitar.frets[k][l].fret.end1.x - xOffset,
+                            guitar.frets[k][l].fret.end1.y - yOffset,
+                            guitar.frets[k][l].fret.end2.x - xOffset,
+                            guitar.frets[k][l].fret.end2.y - yOffset
+                            );
+                    }
+                }
+            }
         }
         return pdf.output();
     };
