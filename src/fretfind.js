@@ -605,7 +605,12 @@ var ff = (function(){
     var getPDF = function(guitar) {
         var x = getExtents(guitar);
         
-        var unitMult = (guitar.units === 'in') ? 1 : 2.54;
+        var unitMult = 1;
+        if (guitar.units === 'cm') {
+            unitMult = 2.54;
+        } else if (guitar.units === 'mm') {
+            unitMult = 25.4;
+        }
         var margin = 0.5 * unitMult;
         var doc = jsPDF('P', guitar.units, [x.maxx + (2 * margin), x.maxy + (2 * margin)]);
         var lineWidth = (1/72) * unitMult;
@@ -670,7 +675,12 @@ var ff = (function(){
         
         var pdf = jsPDF('P', guitar.units, pagesize);
         
-        var unitMult = guitar.units === 'in' ? 1 : 2.54;
+        var unitMult = 1;
+        if (guitar.units === 'cm') {
+            unitMult = 2.54;
+        } else if (guitar.units === 'mm') {
+            unitMult = 25.4;
+        }
         var lineWidth = (1/72) * unitMult;
         var pageWidth = rawPageWidth * unitMult;
         var pageHeight = rawPageHeight * unitMult;
