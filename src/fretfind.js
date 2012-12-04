@@ -388,15 +388,28 @@ var ff = (function(){
     }
     
     var getTable = function(guitar) {
+        var i = 0;
         var output = ['<table class="foundfrets">'+
-            '<tr><td colspan="3">Midline</td></tr>'+
-            '<tr><td>endpoints</td><td>length</td><td>angle</td></tr>'+
-            '<tr><td>'+guitar.midline.toString()+'</td><td>'+
+            '<tr><td colspan="4">Neck</td></tr>'+
+            '<tr><td> </td><td>endpoints</td><td>length</td><td>angle</td></tr>'+
+            '<tr><td>Edge 1</td><td>'+guitar.meta[0].toString()+'</td><td>'+
+            guitar.meta[0].length()+'</td><td>'+guitar.meta[0].angle()+'</td></tr>'+
+            '<tr><td>Midline</td><td>'+guitar.midline.toString()+'</td><td>'+
             guitar.midline.length()+'</td><td>'+guitar.midline.angle()+'</td></tr>'+
+            '<tr><td>Edge 2</td><td>'+guitar.meta[guitar.meta.length-1].toString()+'</td><td>'+
+            guitar.meta[guitar.meta.length-1].length()+'</td><td>'+guitar.meta[guitar.meta.length-1].angle()+'</td></tr>'+
             '</table><br /><br />\n'];
+        output.push('<table class="foundfrets">'+
+            '<tr><td colspan="4">Strings</td></tr>'+
+            '<tr><td> </td><td>endpoints</td><td>length</td><td>angle</td></tr>');
+        for (i=0; i<guitar.strings.length; i++) {
+            output.push('<tr><td>String ' +(i+1)+'</td><td>'+guitar.strings[i].toString()+'</td><td>'+
+            guitar.strings[i].length()+'</td><td>'+guitar.strings[i].angle()+'</td></tr>');
+        }
+        output.push('</table><br /><br />\n');
         output.push('<table class="foundfrets">');
-        for (var i=0; i<guitar.frets.length; i++) {
-            output.push('<tr><td colspan="11">String ' +(i+1)+'</td></tr>'+
+        for (i=0; i<guitar.frets.length; i++) {
+            output.push('<tr><td colspan="11">String ' +(i+1)+' Frets</td></tr>'+
                 '<tr><td>#</td><td>to nut</td><td>to fret</td><td>to bridge</td>'+
                 '<td>intersection point</td><td>partial width</td><td>angle</td>'+
                 '<td>mid to nut</td><td>mid to fret</td><td>mid to bridge</td><td>mid intersection</td>'+
