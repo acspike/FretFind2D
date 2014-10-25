@@ -53,3 +53,8 @@ table.foundfrets td {
 input {
     width: 100px;
 }
+.experimental {
+  color: red;
+  font-weight: bold;
+  text-transform: uppercase;
+}

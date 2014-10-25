@@ -33,6 +33,25 @@
 <script type="text/javascript" src="fretfind.js"><!-- --></script>
 <script type="text/javascript">
 //<![CDATA[
+
+var getLengths = function(id) {
+    var lengths = [];
+    $('#'+id+' > input').each(function(_,item){lengths.push(parseFloat(item.value));});
+    return lengths;
+};
+var setLengths = function(length_id, string_count_id, change_callback, lengths) {
+    var strings = ff.getInt(string_count_id);
+    if (typeof lengths === 'undefined') {
+        lengths = getLengths(length_id);
+    }
+    var output = '';
+    for (var i=0; i<strings; i++) {
+        output += 'string '+(i+1)+': <input type="text" value="'+(lengths[i] || 25+(i*.5))+'" /><br />';
+    }
+    $('#'+length_id).html(output);
+    $('#'+length_id+' > input').change(change_callback);
+};
+
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
 var getGuitar = function() {
@@ -47,6 +66,12 @@ var getGuitar = function() {
     var strings = ff.getInt('numStrings');
     var units = $("input:checked[name='units']").val();
 
+    var lengths = getLengths('ilengths');
+    if (lengthMode === 'individual') {
+      scaleLengthF = lengths[0];
+      scaleLengthL = lengths[lengths.length-1];
+      perp = ff.getFlt('ipDist');
+    }
     var frets = ff.getInt('numFrets');
     var tuning = ff.getTuning('tuning');
     var oNF;
@@ -54,23 +79,23 @@ var getGuitar = function() {
     var oBF;
     var oBL;
     switch (ff.getAlt('overhang')) {
-	    case 'equal':
-		    oNF = oNL = oBF = oBL = ff.getFlt('oE');
-		    break;
-	    case 'nutbridge':
-		    oNF = oNL = ff.getFlt('oN');
-		    oBF = oBL = ff.getFlt('oB');
-		    break;
-	    case 'firstlast':
-		    oNF = oBF = ff.getFlt('oF');
-		    oBL = oNL = ff.getFlt('oL');
-		    break;
-	    case 'all':
-		    oNF = ff.getFlt('oNF');
-		    oBF = ff.getFlt('oBF');
-		    oNL = ff.getFlt('oNL');
-		    oBL = ff.getFlt('oBL');
-		    break;
+      case 'equal':
+        oNF = oNL = oBF = oBL = ff.getFlt('oE');
+        break;
+      case 'nutbridge':
+        oNF = oNL = ff.getFlt('oN');
+        oBF = oBL = ff.getFlt('oB');
+        break;
+      case 'firstlast':
+        oNF = oBF = ff.getFlt('oF');
+        oBL = oNL = ff.getFlt('oL');
+        break;
+      case 'all':
+        oNF = ff.getFlt('oNF');
+        oBF = ff.getFlt('oBF');
+        oNL = ff.getFlt('oNL');
+        oBL = ff.getFlt('oBL');
+        break;
     }
     var scale;
     if (ff.getAlt('scale') === 'et') {
@@ -80,13 +105,13 @@ var getGuitar = function() {
         var scala = ff.getStr('scl');
         scale = ff.scalaScale(scala);
     }
-    
+
     //choose an x value for the center line
     var nutHalf = nutWidth / 2;
-	var bridgeHalf = bridgeWidth / 2;
+    var bridgeHalf = bridgeWidth / 2;
     var nutCandidateCenter = (nutHalf) + oNL;
-	var bridgeCandidateCenter = (bridgeHalf) + oBL;
-	var xcenter = bridgeCandidateCenter >= nutCandidateCenter ? bridgeCandidateCenter : nutCandidateCenter;
+    var bridgeCandidateCenter = (bridgeHalf) + oBL;
+    var xcenter = bridgeCandidateCenter >= nutCandidateCenter ? bridgeCandidateCenter : nutCandidateCenter;
     
     //find x values for fretboard edges
     var fbnxf = xcenter + nutHalf + oNF;
@@ -111,26 +136,29 @@ var getGuitar = function() {
         fdeltay = Math.sqrt((scaleLengthF * scaleLengthF) - (fdeltax * fdeltax));
         ldeltay = Math.sqrt((scaleLengthL * scaleLengthL) - (ldeltax * ldeltax));
     }
-    
+
     //temporarily place first and last strings
     var first = new ff.Segment(new ff.Point(snxf, 0), new ff.Point(sbxf, fdeltay));
     var last = new ff.Segment(new ff.Point(snxl, 0), new ff.Point(sbxl, ldeltay));
 
-    if (lengthMode === 'multiple') {
+    var perp_y = 0;
+    if (lengthMode === 'multiple' || lengthMode === 'individual') {
         //translate so that perpendicular distance lines up
         var fperp = perp * fdeltay;
         var lperp = perp * ldeltay;
         if (fdeltay <= ldeltay) {
-	        first.translate(0, (lperp - fperp));
+          first.translate(0, (lperp - fperp));
+          perp_y = lperp;
         } else {
-	        last.translate(0, (fperp - lperp));
+          last.translate(0, (fperp - lperp));
+          perp_y = fperp;
         }
     }
     
     var nut = new ff.Segment(first.end1.copy(), last.end1.copy());
     var bridge = new ff.Segment(first.end2.copy(), last.end2.copy());
 
-    if (lengthMode === 'multiple') {
+    if (lengthMode === 'multiple' || lengthMode === 'individual') {
         //overhang measurements are now converted from delta x to along line lengths
         oNF = (oNF * nut.length()) / nutWidth;
         oNL = (oNL * nut.length()) / nutWidth;
@@ -145,28 +173,43 @@ var getGuitar = function() {
     //normalize values into the first quadrant via translate
     if (fbf.end1.y < 0 || fbl.end1.y < 0)
     {
-	    var move = fbf.end1.y <= fbl.end1.y ? -fbf.end1.y : -fbl.end1.y;
-	
-	    first.translate(0, move);
-	    last.translate(0, move);
-	    nut.translate(0, move);
-	    bridge.translate(0, move);
-	    fbf.translate(0, move);
-	    fbl.translate(0, move);
+      var move = fbf.end1.y <= fbl.end1.y ? -fbf.end1.y : -fbl.end1.y;
+
+      first.translate(0, move);
+      last.translate(0, move);
+      nut.translate(0, move);
+      bridge.translate(0, move);
+      fbf.translate(0, move);
+      fbl.translate(0, move);
+      perp_y += move;
     }
 
     var nutStringSpacing = nut.length() / (strings - 1);
     var bridgeStringSpacing = bridge.length() / (strings - 1);
-    
+
+
     var lines = [first];
     for (var i=1; i<=(strings-2); i++)
     {
-	    var n=nut.pointAt(i * nutStringSpacing);
-	    var b=bridge.pointAt(i * bridgeStringSpacing);
-	    lines.push(new ff.Segment(n, b));
+      var n=nut.pointAt(i * nutStringSpacing);
+      var b=bridge.pointAt(i * bridgeStringSpacing);
+      if (lengthMode === 'individual') {
+        var l = lengths[i];
+        var nx = n.x;
+        var bx = b.x;
+        var deltax = Math.abs(nx - bx);
+        var deltay = Math.sqrt((l * l) - (deltax * deltax));
+        var n = new ff.Point(nx,0)
+        var b = new ff.Point(bx,deltay);
+        var perpy = perp * deltay;
+        var perpy_diff = perp_y - perpy;
+        n.translate(0, perpy_diff);
+        b.translate(0, perpy_diff);
+      }
+      lines.push(new ff.Segment(n, b));
     }
     lines.push(last);
-    
+
     return {
         scale: scale,
         tuning: tuning,
@@ -186,6 +229,7 @@ var getLink = function() {
         params[id] = $(item).val();
     });
     params.t = ff.getTuning('tuning');
+    params.il = getLengths('ilengths');
     params.u = $("input:checked[name='units']").val();
     params.sl = ff.getAlt('length');
     params.scale = ff.getAlt('scale');
@@ -216,6 +260,7 @@ var updateFormFromHash = function() {
             $(item).val(params[id]);
         }
     });
+    setLengths('ilengths','numStrings', onChange, (params['il'] || []));
     ff.setTuning('tuning','numStrings', onChange, (params['t'] || []));
     $("input[name='units']").filter("[value='"+(params['u']||'in')+"']").click();
     $('#'+params.sl).click();
@@ -226,14 +271,18 @@ var updateFormFromHash = function() {
 $(document).ready(function() {
     ff.initHelp('worksheet');
     ff.initAlternatives('worksheet', onChange);
-    $('#numStrings').change(function(){ff.setTuning('tuning', 'numStrings', onChange);});
+    $('#numStrings').change(function(){
+      ff.setTuning('tuning', 'numStrings', onChange);
+      setLengths('ilengths','numStrings', onChange);
+    });
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'numStrings', onChange);
+    setLengths('ilengths','numStrings', onChange);
     paper = Raphael('diagram',200,800);
     updateFormFromHash();
     processChanges = true;
     onChange();
-    
+
     // prepare download links
     $('#download_dxf').downloadify({
         width: 100,
@@ -421,19 +470,78 @@ as well as fretboards for instruments that play just or meantone scales.
                             In twelve tone equal temperament the values look like this:
                             </p>
                             <pre>
-Fret	P.D.		Fret	P.D.
-1	0.05613		13	0.52806
-2	0.10910		14	0.55455
-3	0.15910		15	0.57955
-4	0.20630		16	0.60315
-5	0.25085		17	0.62542
-6	0.29289		18	0.64645
-7	0.33258		19	0.66629
-8	0.37004		20	0.68502
-9	0.40540		21	0.70270
-10	0.43877		22	0.71938
-11	0.47027		23	0.73513
-12	0.50000		24	0.75000
+Fret  P.D.    Fret  P.D.
+1  0.05613    13  0.52806
+2  0.10910    14  0.55455
+3  0.15910    15  0.57955
+4  0.20630    16  0.60315
+5  0.25085    17  0.62542
+6  0.29289    18  0.64645
+7  0.33258    19  0.66629
+8  0.37004    20  0.68502
+9  0.40540    21  0.70270
+10  0.43877    22  0.71938
+11  0.47027    23  0.73513
+12  0.50000    24  0.75000
+                            </pre>
+                        </dd>
+                    </dl>
+                </dd>
+                <dt id="individual">individual</dt>
+                <dd>
+                    <div class="experimental">Danger: Experimental!!!</div>
+                    <dl>
+                        <dt>string scale lengths:</dt>
+                        <dd id="ilengths">
+                        </dd>
+                        <dd class="help">
+                            The scale length is the playing/speaking length of the
+                            string measured from the nut to the bridge.
+                            It is perhaps more properly twice the distance from the nut to the octave fret.
+                            Enter the actual scale length of the each string.
+                        </dd>
+                        <dt>perpendicular fret distance</dt>
+                        <dd><input type="text" id="ipDist" value="0.5" /></dd>
+                        <dd class="help">
+                            <p>
+                            The perpendicular fret distance
+                            is the ratio of distances along the first and last
+                            string that fall on a line perpendicular to the midline of the neck.
+                            This is used to control the angle of the nut, frets and bridge.
+                            </p>
+                            <p>
+                            Traditionally this property of non-parallel-ly fretted
+                            fretboards is measured by assigning a "perpendicular fret".
+                            "Perpendicular distance" avoids two problems with the "perpendicular fret" method.
+                            First, it is possible that no fret falls into this perpendicular position.
+                            With "perpendicular distance" we avoid fractional frets.
+                            Second, it is possible and even likely with non-equal temperament fretboards that
+                            as a fret crosses the fretboard it will fall at different ratios along the strings.
+                            With "perpendicular distance" we avoid complex calculations
+                            and have more predictable results.
+                            </p>
+                            <p>
+                            A value of 0 results in a perpendicular nut.
+                            A value of 1 results in a perpendicular bridge.
+                            The default 0.5 results in a perpendicular octave fret.
+                            To calculate an appropriate value for any fret,
+                            simply divide the distance of the fret from the nut by the total length of the string.
+                            In twelve tone equal temperament the values look like this:
+                            </p>
+                            <pre>
+Fret  P.D.    Fret  P.D.
+1  0.05613    13  0.52806
+2  0.10910    14  0.55455
+3  0.15910    15  0.57955
+4  0.20630    16  0.60315
+5  0.25085    17  0.62542
+6  0.29289    18  0.64645
+7  0.33258    19  0.66629
+8  0.37004    20  0.68502
+9  0.40540    21  0.70270
+10  0.43877    22  0.71938
+11  0.47027    23  0.73513
+12  0.50000    24  0.75000
                             </pre>
                         </dd>
                     </dl>

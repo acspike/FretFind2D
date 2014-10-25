@@ -291,7 +291,7 @@ var ff = (function(){
             parallelFrets = false;
         }
         //var intersection = nut.intersect(bridge);
-        
+
         // an array of fretlets for each string
         var strings = [];
         var tones = guitar.scale.steps.length - 1;
@@ -384,6 +384,7 @@ var ff = (function(){
         guitar.nut = nut;
         guitar.bridge = bridge;
         guitar.meta = meta;
+        guitar.doPartials = doPartials;
         return guitar;
     }
     
@@ -411,9 +412,12 @@ var ff = (function(){
         for (i=0; i<guitar.frets.length; i++) {
             output.push('<tr><td colspan="11">String ' +(i+1)+' Frets</td></tr>'+
                 '<tr><td>#</td><td>to nut</td><td>to fret</td><td>to bridge</td>'+
-                '<td>intersection point</td><td>partial width</td><td>angle</td>'+
-                '<td>mid to nut</td><td>mid to fret</td><td>mid to bridge</td><td>mid intersection</td>'+
-                '</tr>\n');
+                '<td>intersection point</td>');
+            if (guitar.doPartials) {
+                output.push('<td>partial width</td><td>angle</td>'+
+                    '<td>mid to nut</td><td>mid to fret</td><td>mid to bridge</td><td>mid intersection</td>');
+            }
+            output.push('</tr>\n');
             for(var j=0; j<guitar.frets[i].length; j++) {
                 output.push('<tr><td>'+(j===0?'n':j)+'</td><td>');
                 output.push(roundFloat(guitar.frets[i][j].nutDist, precision));
@@ -423,19 +427,23 @@ var ff = (function(){
                 output.push(roundFloat(guitar.frets[i][j].bridgeDist, precision));
                 output.push('</td><td>');
                 output.push(guitar.frets[i][j].intersection.toString());
-                output.push('</td><td>');
-                output.push(roundFloat(guitar.frets[i][j].width, precision));
-                output.push('</td><td>');
-                output.push(roundFloat(guitar.frets[i][j].angle, precision));
-                output.push('</td><td>');
-                output.push(roundFloat(guitar.frets[i][j].midline_nutDist, precision));
-                output.push('</td><td>');
-                output.push(roundFloat(guitar.frets[i][j].midline_pFretDist, precision));
-                output.push('</td><td>');
-                output.push(roundFloat(guitar.frets[i][j].midline_bridgeDist, precision));
-                output.push('</td><td>');
-                output.push(guitar.frets[i][j].midline_intersection.toString());
-                output.push('</td></tr>\n');
+                output.push('</td>');
+                if (guitar.doPartials) {
+                  output.push('<td>');
+                  output.push(roundFloat(guitar.frets[i][j].width, precision));
+                  output.push('</td><td>');
+                  output.push(roundFloat(guitar.frets[i][j].angle, precision));
+                  output.push('</td><td>');
+                  output.push(roundFloat(guitar.frets[i][j].midline_nutDist, precision));
+                  output.push('</td><td>');
+                  output.push(roundFloat(guitar.frets[i][j].midline_pFretDist, precision));
+                  output.push('</td><td>');
+                  output.push(roundFloat(guitar.frets[i][j].midline_bridgeDist, precision));
+                  output.push('</td><td>');
+                  output.push(guitar.frets[i][j].midline_intersection.toString());
+                  output.push('</td>');
+                }
+                output.push('</tr>\n');
             }
         }
         output.push('</table>');
@@ -446,8 +454,10 @@ var ff = (function(){
         var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
         var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
         var metastyle = {stroke:'rgb(221,221,221)','stroke-width':'1px'};
-        var fretstyle = {stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
-        
+        var pfretstyle = {stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'1px'};
+        var ifretstyle = {stroke:'rgb(255,0,0)','stroke-linecap':'round','stroke-width':'3px'};
+        var fretstyle = guitar.doPartials ? pfretstyle : ifretstyle;
+
         paper.clear();
         
         var all = paper.set();
@@ -469,7 +479,7 @@ var ff = (function(){
         var edges = paper.path(guitar.edge1.toSVGD() + guitar.edge2.toSVGD()).attr(edgestyle);
         all.push(edges);
         
-        var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(fretstyle);
+        var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
         var fretpath = [];
@@ -517,13 +527,15 @@ var ff = (function(){
     
     var getSVG = function(guitar) {
         var x = getExtents(guitar);
+        var fret_class = guitar.doPartials ? 'pfret': 'ifret';
         output = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+x.minx+' '+x.miny+' '+x.maxx+' '+x.maxy+
                         '" height="'+x.height+guitar.units+'" width="'+x.width+guitar.units+'" >\n'];
         output.push('<defs><style type="text/css"><![CDATA[\n'+
                     '\t.string{stroke:rgb(0,0,0);stroke-width:0.2%;}\n'+
                     '\t.meta{stroke:rgb(221,221,221);stroke-width:0.2%;}\n'+
                     '\t.edge{stroke:rgb(0,0,255);stroke-width:0.2%;}\n'+
-                    '\t.fret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.2%;}\n'+
+                    '\t.pfret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.2%;}\n'+
+                    '\t.ifret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.8%;}\n'+
                     ']'+']></style></defs>\n');
         //Output SVG line elements for each string.
         for (var i=0; i<guitar.strings.length; i++) {
@@ -551,7 +563,7 @@ var ff = (function(){
         //which gives nice rounded ends
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
-                output.push('<path d="'+guitar.frets[i][j].fret.toSVGD()+'" class="fret" />\n');
+                output.push('<path d="'+guitar.frets[i][j].fret.toSVGD()+'" class="'+fret_class+'" />\n');
             }
         }
         output.push('</svg>');
@@ -628,6 +640,8 @@ var ff = (function(){
         var doc = jsPDF('P', guitar.units, [x.maxx + (2 * margin), x.maxy + (2 * margin)]);
         var lineWidth = (1/72) * unitMult;
 
+        var intersect = guitar.doPartial ? 0 : .02;
+
         doc.setLineWidth(lineWidth);
 
         //Output center line
@@ -662,9 +676,9 @@ var ff = (function(){
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
                 doc.line(
-                    guitar.frets[i][j].fret.end1.x + margin, 
-                    guitar.frets[i][j].fret.end1.y + margin, 
-                    guitar.frets[i][j].fret.end2.x + margin, 
+                    guitar.frets[i][j].fret.end1.x + intersect + margin,
+                    guitar.frets[i][j].fret.end1.y + margin,
+                    guitar.frets[i][j].fret.end2.x - intersect + margin,
                     guitar.frets[i][j].fret.end2.y + margin
                     );
             }
@@ -702,6 +716,8 @@ var ff = (function(){
         var printableWidth = pageWidth - ( 2 * pageOverlap );
         var yPages = Math.ceil( x.height / printableHeight );
         var xPages = Math.ceil( x.width / printableWidth );
+
+        var intersect = guitar.doPartial ? 0 : .02;
         
         for (var i=0; i<yPages; i++) {
             for (var j=0; j<xPages; j++) {
@@ -746,9 +762,9 @@ var ff = (function(){
                 for (var k=0; k<guitar.frets.length; k++) {
                     for (var l=0; l<guitar.frets[k].length; l++) {
                         pdf.line(
-                            guitar.frets[k][l].fret.end1.x - xOffset,
+                            guitar.frets[k][l].fret.end1.x + intersect - xOffset,
                             guitar.frets[k][l].fret.end1.y - yOffset,
-                            guitar.frets[k][l].fret.end2.x - xOffset,
+                            guitar.frets[k][l].fret.end2.x - intersect - xOffset,
                             guitar.frets[k][l].fret.end2.y - yOffset
                             );
                     }
@@ -762,11 +778,18 @@ var ff = (function(){
     // - more compatible DXF borrowing from inkscape?
     var getDXF = function(guitar) {
         //References: Minimum Requirements for Creating a DXF File of a 3D Model By Paul Bourke
-        var seg2dxf = function(seg) {
+        var seg2dxf = function(seg, dot) {
+            if (typeof dot === 'undefined') {
+                dot = false;
+            }
+            var intersect = 0;
+            if (dot) {
+                intersect = .02;
+            }
             return '0\nLINE\n8\n2\n62\n4\n10\n'+
-                seg.end1.x+'\n20\n'+
+                (seg.end1.x+intersect)+'\n20\n'+
                 seg.end1.y+'\n30\n0\n11\n'+
-                seg.end2.x+'\n21\n'+
+                (seg.end2.x-intersect)+'\n21\n'+
                 seg.end2.y+'\n31\n0\n';
         };
         var x = getExtents(guitar);
@@ -786,7 +809,7 @@ var ff = (function(){
         //Output a line for each fretlet. 
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
-                output.push(seg2dxf(guitar.frets[i][j].fret));
+                output.push(seg2dxf(guitar.frets[i][j].fret,true));
             }
         }
         output.push('0\nENDSEC\n0\nEOF\n');
