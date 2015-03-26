@@ -393,12 +393,16 @@ var ff = (function(){
         var output = ['<table class="foundfrets">'+
             '<tr><td colspan="4">Neck</td></tr>'+
             '<tr><td> </td><td>endpoints</td><td>length</td><td>angle</td></tr>'+
+            '<tr><td>Nut</td><td>'+guitar.nut.toString()+'</td><td>'+
+            guitar.nut.length()+'</td><td>'+guitar.nut.angle()+'</td></tr>'+
             '<tr><td>Edge 1</td><td>'+guitar.meta[0].toString()+'</td><td>'+
             guitar.meta[0].length()+'</td><td>'+guitar.meta[0].angle()+'</td></tr>'+
             '<tr><td>Midline</td><td>'+guitar.midline.toString()+'</td><td>'+
             guitar.midline.length()+'</td><td>'+guitar.midline.angle()+'</td></tr>'+
             '<tr><td>Edge 2</td><td>'+guitar.meta[guitar.meta.length-1].toString()+'</td><td>'+
             guitar.meta[guitar.meta.length-1].length()+'</td><td>'+guitar.meta[guitar.meta.length-1].angle()+'</td></tr>'+
+            '<tr><td>Bridge</td><td>'+guitar.bridge.toString()+'</td><td>'+
+            guitar.bridge.length()+'</td><td>'+guitar.bridge.angle()+'</td></tr>'+
             '</table><br /><br />\n'];
         output.push('<table class="foundfrets">'+
             '<tr><td colspan="4">Strings</td></tr>'+
