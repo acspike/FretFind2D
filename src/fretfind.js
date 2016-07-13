@@ -640,7 +640,7 @@ var ff = (function(){
         var doc = jsPDF('P', guitar.units, [x.maxx + (2 * margin), x.maxy + (2 * margin)]);
         var lineWidth = (1/72) * unitMult;
 
-        var intersect = guitar.doPartial ? 0 : .02;
+        var intersect = guitar.doPartials ? 0 : .02;
 
         doc.setLineWidth(lineWidth);
 
@@ -717,7 +717,7 @@ var ff = (function(){
         var yPages = Math.ceil( x.height / printableHeight );
         var xPages = Math.ceil( x.width / printableWidth );
 
-        var intersect = guitar.doPartial ? 0 : .02;
+        var intersect = guitar.doPartials ? 0 : .02;
         
         for (var i=0; i<yPages; i++) {
             for (var j=0; j<xPages; j++) {
