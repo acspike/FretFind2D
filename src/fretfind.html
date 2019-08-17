@@ -25,8 +25,7 @@
 <script type="text/javascript" src="libs/jquery-1.4.2.min.js"><!-- --></script>
 <script type="text/javascript" src="libs/jquery.ba-bbq.min.js"><!-- --></script>
 <script type="text/javascript" src="libs/raphael-min.js"><!-- --></script>
-<script type="text/javascript" src="libs/swfobject.js"><!-- --></script>
-<script type="text/javascript" src="libs/downloadify.min.js"><!-- --></script>
+<script type="text/javascript" src="libs/FileSaver.min.js"><!-- --></script>
 <script type="text/javascript" src="libs/base64.js"><!-- --></script>
 <script type="text/javascript" src="libs/sprintf.js"><!-- --></script>
 <script type="text/javascript" src="libs/jspdf.js"><!-- --></script>
@@ -283,99 +282,80 @@ $(document).ready(function() {
     processChanges = true;
     onChange();
 
-    // prepare download links
-    $('#download_dxf').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.dxf',
-        data: function(){
+    var isFileSaverSupported = false;
+    try {
+        isFileSaverSupported = !!new Blob;
+    } catch (e) {}
+
+    var dl = $('#downloads');
+    if (isFileSaverSupported){
+        
+        dl.append('<dt>DXF</dt><dd><button id="download_dxf">Download</button></dd>');
+        $('#download_dxf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            return ff.getDXF(guitar);
-        }
-    });
-    $('#download_pdf').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.pdf',
-        data: function(){
-            var guitar = getGuitar();
-            guitar = ff.fretGuitar(guitar);
-            return ff.getPDF(guitar);
-        }
-    });
-    $('#download_pdfm').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.pdf',
-        data: function(){
+            var blob = new Blob([ff.getDXF(guitar)], {type: "image/vnd.dxf"});
+            saveAs(blob, "fretboard.dxf");
+        });
+    
+        dl.append('<dt>PDF (multi-page)</dt>' +
+            '<dd>' +
+                '<label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label>' +
+                '<label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label>' +
+            '</dd>' +
+            '<dd><button id="download_pdfm">Download</button></dd>');
+        $('#download_pdfm').click(function(){
             var guitar = getGuitar();
             var pagesize = $("input:checked[name='pdfm_pagesize']").val();
             guitar = ff.fretGuitar(guitar);
-            return ff.getPDFMultipage(guitar, pagesize);
-        }
-    });
-    $('#download_svg').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.svg',
-        data: function(){
+            var blob = new Blob([ff.getPDFMultipage(guitar, pagesize)], {type: "application/pdf"});
+            saveAs(blob, "fretboard.pdf");
+        });
+        
+        dl.append('<dt>PDF (single page)</dt><dd><button id="download_pdf">Download</button></dd>');
+        $('#download_pdf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            return ff.getSVG(guitar);
-        }
-    });
-    $('#download_csv').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.csv',
-        data: function(){
+            var blob = new Blob([ff.getPDF(guitar)], {type: "application/pdf"});
+            saveAs(blob, "fretboard.pdf");
+        });
+        
+        dl.append('<dt>SVG</dt><dd><button id="download_svg">Download</button></dd>');
+        $('#download_svg').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            return ff.getCSV(guitar);
-        }
-    });
-    $('#download_html').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.html',
-        data: function(){
+            var blob = new Blob([ff.getSVG(guitar)], {type: "image/svg+xml"});
+            saveAs(blob, "fretboard.svg");
+        });
+        
+        dl.append('<dt>CSV</dt><dd><button id="download_csv">Download</button></dd>');
+        $('#download_csv').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            return ff.getHTML(guitar);
-        }
-    });
-    $('#download_tab').downloadify({
-        width: 100,
-        height: 30,
-        transparent: true,
-        swf: 'libs/downloadify.swf',
-        downloadImage: 'libs/download.png',
-        filename: 'fretboard.tab',
-        data: function(){
+            var blob = new Blob([ff.getCSV(guitar)], {type: "text/csv"});
+            saveAs(blob, "fretboard.csv");
+        });
+        
+        dl.append('<dt>HTML</dt><dd><button id="download_html">Download</button></dd>');
+        $('#download_html').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            return ff.getTAB(guitar);
-        }
-    });
+            var blob = new Blob([ff.getHTML(guitar)], {type: "text/html"});
+            saveAs(blob, "fretboard.html");
+        });
+        
+        dl.append('<dt>TAB</dt><dd><button id="download_tab">Download</button></dd>');
+        $('#download_tab').click(function(){
+            var guitar = getGuitar();
+            guitar = ff.fretGuitar(guitar);
+            var blob = new Blob([ff.getTAB(guitar)], {type: "text/tab-separated-values"});
+            saveAs(blob, "fretboard.tab");
+        });
+    
+    } else {
+        dl.append('<dd><b>Buttons missing?<br/>Downloads require a modern browser that supports <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob/Blob#Browser_compatibility">the Blob constructor API</a>.</b></dd>');
+    }
+    
 });
 
 //]]>
@@ -705,19 +685,6 @@ Fret  P.D.    Fret  P.D.
     <div id="diagram"><!-- --></div>
     <dl id="downloads">
         <dt>Link</dt><dd><a href="#" id="bookmark">Link to this design</a></dd>
-        <dt>DXF</dt><dd id="download_dxf"></dd>
-        <dt>PDF (multi-page)</dt>
-        <dd>
-            <label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label>
-            <label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label>
-        </dd>
-        <dd id="download_pdfm"></dd>
-        <dt>PDF (single page)</dt><dd id="download_pdf"></dd>
-        <dt>SVG</dt><dd id="download_svg"></dd>
-        <dt>CSV</dt><dd id="download_csv"></dd>
-        <dt>HTML</dt><dd id="download_html"></dd>
-        <dt>TAB</dt><dd id="download_tab"></dd>
-        <dd><b>Buttons missing?<br/>Downloads require <a href="https://get.adobe.com/flashplayer/">Adobe Flash Player</a>.</b></dd>
     </dl>
     <div id="tables"><!-- --></div>
 </div>
