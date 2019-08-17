@@ -18,6 +18,10 @@ td {
 #tables {
     float: left;
 }
+p.dev {
+    clear: both;
+    padding: 1em;
+}
 dt,dd {
     margin:5px;
 }
