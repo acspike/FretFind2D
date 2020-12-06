@@ -1,8 +1,0 @@
-FretFind2D is a fretboard designer for microtonal and multi-scaled stringed instruments.
-            (Oh, sure, regular guitars too. But only if you have to.)
-
-Plans:
-Fretfind is in need of a refresh. This is it. The next version will be written in javascript.
-Calulation and PDF generation will take place on the client side without needing to send 
-information back to the server. If you are a nerdy luthier, please join me.
-
