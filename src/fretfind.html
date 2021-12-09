@@ -51,11 +51,42 @@ var setLengths = function(length_id, string_count_id, change_callback, lengths) 
     $('#'+length_id+' > input').change(change_callback);
 };
 
+var getGauges = function(id) {
+    var gauges = [];
+    $('#'+id+' > input').each(function(_,item){gauges.push(parseFloat(item.value));});
+    return gauges;
+};
+var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
+    var strings = ff.getInt(string_count_id);
+    if (typeof gauges === 'undefined') {
+        gauges = getGauges(gauge_id);
+    }
+    var output = '';
+    for (var i=0; i<strings; i++) {
+        output += 'string '+(i+1)+': <input type="text" value="'+(gauges[i] || 0.0)+'" /><br />';
+    }
+    $('#'+gauge_id).html(output);
+    $('#'+gauge_id+' > input').change(change_callback);
+};
+
+// computes spacing, assuming that width does not include the overhang (it's already accounted for)
+var computeProportionalOffsets = function(strings, gauges, width) {
+    var offsets = [0];
+    const working_area = width - gauges.reduce((tot, cor) => tot + cur);
+    const distance = working_area / (strings - 1);
+    for (var i=1; i<strings; i++) {
+        offsets.push(offsets[i-1] + gauges[i-1]/2 + distance + gauges[i]/2);
+    }
+    return offsets;
+};
+
+
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
 var getGuitar = function() {
     //get form values
     var lengthMode = ff.getAlt('length');
+    var spacingMode = ff.getAlt('spacing');
     var scaleLength = ff.getFlt('len');
     var scaleLengthF = ff.getFlt('lenF');
     var scaleLengthL = ff.getFlt('lenL');
@@ -65,7 +96,11 @@ var getGuitar = function() {
     var strings = ff.getInt('numStrings');
     var units = $("input:checked[name='units']").val();
 
+    if (spacingMode === 'proportional') {
+        var gauges = getGauges('igauges');
+    }
     var lengths = getLengths('ilengths');
+    var gauges = getGauges('igauges');
     if (lengthMode === 'individual') {
       scaleLengthF = lengths[0];
       scaleLengthL = lengths[lengths.length-1];
@@ -77,7 +112,7 @@ var getGuitar = function() {
     var oNL;
     var oBF;
     var oBL;
-    switch (ff.getAlt('overhang')) {
+    switch (ff.getAlt('overhang')) { 
       case 'equal':
         oNF = oNL = oBF = oBL = ff.getFlt('oE');
         break;
@@ -186,6 +221,10 @@ var getGuitar = function() {
     var nutStringSpacing = nut.length() / (strings - 1);
     var bridgeStringSpacing = bridge.length() / (strings - 1);
 
+    if (spacingMode === 'proportional') {
+        var nutOffsets = computeProportionalOffsets(strings, gauges, nutWidth);
+        var bridgeOffsets = computeProportionalOffsets(strings, gauges, bridgeWidth);  
+    }
 
     var lines = [first];
     for (var i=1; i<=(strings-2); i++)
@@ -229,6 +268,7 @@ var getLink = function() {
     });
     params.t = ff.getTuning('tuning');
     params.il = getLengths('ilengths');
+    params.ig = getGauges('igauges');
     params.u = $("input:checked[name='units']").val();
     params.sl = ff.getAlt('length');
     params.scale = ff.getAlt('scale');
@@ -260,6 +300,7 @@ var updateFormFromHash = function() {
         }
     });
     setLengths('ilengths','numStrings', onChange, (params['il'] || []));
+    setGauges('igauges', 'numStrings', onChange, (params['ig'] || []));
     ff.setTuning('tuning','numStrings', onChange, (params['t'] || []));
     $("input[name='units']").filter("[value='"+(params['u']||'in')+"']").click();
     $('#'+params.sl).click();
@@ -273,10 +314,12 @@ $(document).ready(function() {
     $('#numStrings').change(function(){
       ff.setTuning('tuning', 'numStrings', onChange);
       setLengths('ilengths','numStrings', onChange);
+      setGauges('igauges', 'numStrings', onChange);
     });
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'numStrings', onChange);
     setLengths('ilengths','numStrings', onChange);
+    setGauges('igauges', 'numStrings', onChange);
     paper = Raphael('diagram',200,800);
     updateFormFromHash();
     processChanges = true;
@@ -549,7 +592,7 @@ Fret  P.D.    Fret  P.D.
                 <dd>
                     <dl>
                         <dt>string gauges:</dt>
-                        <dd id=“igauges”>
+                        <dd id="igauges">
                         </dd>
                         <dd class="help">
                             Enter the thickness of each string.
