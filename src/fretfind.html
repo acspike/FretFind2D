@@ -70,7 +70,7 @@ var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
 };
 
 // computes string offsets along the nut itself, assuming that width does not include the overhang (it's already accounted for)
-// if "proportional" is not selected, gauges will all b 0 and this will simply return
+// if "proportional" is not selected, gauges will all be 0 and this will simply return
 // the offsets along the nut. 
 var computeOffsets = function(strings, gauges, actual_length, perp_width, spacingMode) {
     var offsets = [0];
