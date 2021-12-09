@@ -69,13 +69,17 @@ var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
     $('#'+gauge_id+' > input').change(change_callback);
 };
 
-// computes spacing, assuming that width does not include the overhang (it's already accounted for)
-var computeProportionalOffsets = function(strings, gauges, width) {
+// computes string offsets along the nut itself, assuming that width does not include the overhang (it's already accounted for)
+var computeProportionalOffsets = function(strings, gauges, actual_length, perp_width) {
+    // the first and last strings have been shifted to the left/right of the overhang-defined lines by half of their gauges,
+    // so we start with an effective offset of 0.
     var offsets = [0];
-    const working_area = width - gauges.reduce((tot, cur) => tot + cur);
-    const distance = working_area / (strings - 1);
-    for (var i=1; i<strings; i++) {
-        offsets.push(offsets[i-1] + gauges[i-1]/2 + distance + gauges[i]/2);
+    const working_area = perp_width - gauges.reduce((tot, cur) => tot + cur); 
+    const perp_gap = working_area / (strings - 1);
+    for (var i=1; i<strings-1; i++) {
+        half_adjacent_strings = (gauges[i-1] + gauges[i]) / 2.0;
+        next_space = perp_gap + half_adjacent_strings; 
+        offsets.push(offsets[i-1] + next_space * actual_length / perp_width);
     }
     return offsets;
 };
@@ -156,6 +160,13 @@ var getGuitar = function() {
     var snxl = xcenter - nutHalf;
     var sbxl = xcenter - bridgeHalf;
 
+    if (spacing === 'proportional') {
+        snxf -= gauges[strings-1]/2.0;
+        snxl += gauges[0]/2.0;
+        sbxf -= gauges[strings-1]/2.0;
+        sbxl += gauges[0]/2.0;
+    }
+
     //find the slope of the strings
     var fdeltax = sbxf - snxf;
     var ldeltax = sbxl - snxl;
@@ -218,11 +229,9 @@ var getGuitar = function() {
     var nutStringSpacing = nut.length() / (strings - 1);
     var bridgeStringSpacing = bridge.length() / (strings - 1);
 
-    console.log(spacingMode);
-    console.log(lengthMode);
     if (spacingMode === 'proportional') {
-        var nutOffsets = computeProportionalOffsets(strings, gauges, nutWidth);
-        var bridgeOffsets = computeProportionalOffsets(strings, gauges, bridgeWidth);  
+        var nutOffsets = computeProportionalOffsets(strings, gauges, nut.length(), nutWidth);
+        var bridgeOffsets = computeProportionalOffsets(strings, gauges, bridge.length(), bridgeWidth); 
     }
     var lines = [first];
     for (var i=1; i<=(strings-2); i++)
@@ -231,8 +240,8 @@ var getGuitar = function() {
         var n = nut.pointAt(nutOffsets[i]);
         var b = bridge.pointAt(bridgeOffsets[i]);
       } else {
-       var n = nut.pointAt(i * nutStringSpacing / 2);
-       var b = bridge.pointAt(i * bridgeStringSpacing / 2);
+       var n = nut.pointAt(i * nutStringSpacing);
+       var b = bridge.pointAt(i * bridgeStringSpacing);
       } 
       
       if (lengthMode === 'individual') {
