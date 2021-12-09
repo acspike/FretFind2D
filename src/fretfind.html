@@ -71,8 +71,6 @@ var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
 
 // computes string offsets along the nut itself, assuming that width does not include the overhang (it's already accounted for)
 var computeProportionalOffsets = function(strings, gauges, actual_length, perp_width) {
-    // the first and last strings have been shifted to the left/right of the overhang-defined lines by half of their gauges,
-    // so we start with an effective offset of 0.
     var offsets = [0];
     const working_area = perp_width - gauges.reduce((tot, cur) => tot + cur); 
     const perp_gap = working_area / (strings - 1);
@@ -159,13 +157,6 @@ var getGuitar = function() {
     var sbxf = xcenter + bridgeHalf;
     var snxl = xcenter - nutHalf;
     var sbxl = xcenter - bridgeHalf;
-
-    if (spacing === 'proportional') {
-        snxf -= gauges[strings-1]/2.0;
-        snxl += gauges[0]/2.0;
-        sbxf -= gauges[strings-1]/2.0;
-        sbxl += gauges[0]/2.0;
-    }
 
     //find the slope of the strings
     var fdeltax = sbxf - snxf;
