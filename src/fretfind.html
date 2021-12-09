@@ -70,12 +70,15 @@ var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
 };
 
 // computes string offsets along the nut itself, assuming that width does not include the overhang (it's already accounted for)
-var computeProportionalOffsets = function(strings, gauges, actual_length, perp_width) {
+// if "proportional" is not selected, gauges will all b 0 and this will simply return
+// the offsets along the nut. 
+var computeOffsets = function(strings, gauges, actual_length, perp_width, spacingMode) {
     var offsets = [0];
-    const working_area = perp_width - gauges.reduce((tot, cur) => tot + cur); 
+    const corrected_gauges = spacingMode === 'proportional' ? gauges : new Array(strings).fill(0);
+    const working_area = perp_width - corrected_gauges.reduce((tot, cur) => tot + cur); 
     const perp_gap = working_area / (strings - 1);
     for (var i=1; i<strings-1; i++) {
-        half_adjacent_strings = (gauges[i-1] + gauges[i]) / 2.0;
+        half_adjacent_strings = (corrected_gauges[i-1] + corrected_gauges[i]) / 2.0;
         next_space = perp_gap + half_adjacent_strings; 
         offsets.push(offsets[i-1] + next_space * actual_length / perp_width);
     }
@@ -217,24 +220,14 @@ var getGuitar = function() {
       perp_y += move;
     }
 
-    var nutStringSpacing = nut.length() / (strings - 1);
-    var bridgeStringSpacing = bridge.length() / (strings - 1);
-
+    var nutOffsets = computeOffsets(strings, gauges, nut.length(), nutWidth, spacingMode);
+    var bridgeOffsets = computeOffsets(strings, gauges, bridge.length(), bridgeWidth, spacingMode); 
     
-    if (spacingMode === 'proportional') {
-        var nutOffsets = computeProportionalOffsets(strings, gauges, nut.length(), nutWidth);
-        var bridgeOffsets = computeProportionalOffsets(strings, gauges, bridge.length(), bridgeWidth); 
-    }
     var lines = [first];
     for (var i=1; i<=(strings-2); i++)
     {
-      if (spacingMode === 'proportional') {
-        var n = nut.pointAt(nutOffsets[i]);
-        var b = bridge.pointAt(bridgeOffsets[i]);
-      } else {
-       var n = nut.pointAt(i * nutStringSpacing);
-       var b = bridge.pointAt(i * bridgeStringSpacing);
-      } 
+      var n = nut.pointAt(nutOffsets[i]);
+      var b = bridge.pointAt(bridgeOffsets[i]);
       
       if (lengthMode === 'individual') {
         var l = lengths[i];
