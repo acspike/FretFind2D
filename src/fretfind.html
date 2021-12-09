@@ -113,7 +113,7 @@ var getGuitar = function() {
     var oNL;
     var oBF;
     var oBL;
-    switch (ff.getAlt('overhang')) { 
+    switch (ff.getAlt('overhang')) {
       case 'equal':
         oNF = oNL = oBF = oBL = ff.getFlt('oE');
         break;
@@ -229,6 +229,7 @@ var getGuitar = function() {
     var nutStringSpacing = nut.length() / (strings - 1);
     var bridgeStringSpacing = bridge.length() / (strings - 1);
 
+    
     if (spacingMode === 'proportional') {
         var nutOffsets = computeProportionalOffsets(strings, gauges, nut.length(), nutWidth);
         var bridgeOffsets = computeProportionalOffsets(strings, gauges, bridge.length(), bridgeWidth); 
