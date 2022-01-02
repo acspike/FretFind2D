@@ -51,11 +51,47 @@ var setLengths = function(length_id, string_count_id, change_callback, lengths) 
     $('#'+length_id+' > input').change(change_callback);
 };
 
+var getGauges = function(id) {
+    var gauges = [];
+    $('#'+id+' > input').each(function(_,item){gauges.push(parseFloat(item.value));});
+    return gauges;
+};
+var setGauges = function(gauge_id, string_count_id, change_callback, gauges) {
+    var strings = ff.getInt(string_count_id);
+    if (typeof gauges === 'undefined') {
+        gauges = getGauges(gauge_id);
+    }
+    var output = '';
+    for (var i=0; i<strings; i++) {
+        output += 'string '+(i+1)+': <input type="text" value="'+(gauges[i] || 0.0)+'" /><br />';
+    }
+    $('#'+gauge_id).html(output);
+    $('#'+gauge_id+' > input').change(change_callback);
+};
+
+// computes string offsets along the nut itself, assuming that width does not include the overhang (it's already accounted for)
+// if "proportional" is not selected, gauges will all be 0 and this will simply return
+// the offsets along the nut. 
+var computeOffsets = function(strings, gauges, actual_length, perp_width, spacingMode) {
+    var offsets = [0];
+    const corrected_gauges = spacingMode === 'proportional' ? gauges : new Array(strings).fill(0);
+    const working_area = perp_width - corrected_gauges.reduce((tot, cur) => tot + cur); 
+    const perp_gap = working_area / (strings - 1);
+    for (var i=1; i<strings-1; i++) {
+        half_adjacent_strings = (corrected_gauges[i-1] + corrected_gauges[i]) / 2.0;
+        next_space = perp_gap + half_adjacent_strings; 
+        offsets.push(offsets[i-1] + next_space * actual_length / perp_width);
+    }
+    return offsets;
+};
+
+
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
 var getGuitar = function() {
     //get form values
     var lengthMode = ff.getAlt('length');
+    var spacingMode = ff.getAlt('spacing');
     var scaleLength = ff.getFlt('len');
     var scaleLengthF = ff.getFlt('lenF');
     var scaleLengthL = ff.getFlt('lenL');
@@ -65,6 +101,7 @@ var getGuitar = function() {
     var strings = ff.getInt('numStrings');
     var units = $("input:checked[name='units']").val();
 
+    var gauges = getGauges('igauges');
     var lengths = getLengths('ilengths');
     if (lengthMode === 'individual') {
       scaleLengthF = lengths[0];
@@ -183,15 +220,15 @@ var getGuitar = function() {
       perp_y += move;
     }
 
-    var nutStringSpacing = nut.length() / (strings - 1);
-    var bridgeStringSpacing = bridge.length() / (strings - 1);
-
-
+    var nutOffsets = computeOffsets(strings, gauges, nut.length(), nutWidth, spacingMode);
+    var bridgeOffsets = computeOffsets(strings, gauges, bridge.length(), bridgeWidth, spacingMode); 
+    
     var lines = [first];
     for (var i=1; i<=(strings-2); i++)
     {
-      var n=nut.pointAt(i * nutStringSpacing);
-      var b=bridge.pointAt(i * bridgeStringSpacing);
+      var n = nut.pointAt(nutOffsets[i]);
+      var b = bridge.pointAt(bridgeOffsets[i]);
+      
       if (lengthMode === 'individual') {
         var l = lengths[i];
         var nx = n.x;
@@ -229,8 +266,10 @@ var getLink = function() {
     });
     params.t = ff.getTuning('tuning');
     params.il = getLengths('ilengths');
+    params.ig = getGauges('igauges');
     params.u = $("input:checked[name='units']").val();
     params.sl = ff.getAlt('length');
+    params.ns = ff.getAlt('spacing');
     params.scale = ff.getAlt('scale');
     params.o = ff.getAlt('overhang');
     var location = window.location.toString().replace(/#.*/,'');
@@ -260,9 +299,11 @@ var updateFormFromHash = function() {
         }
     });
     setLengths('ilengths','numStrings', onChange, (params['il'] || []));
+    setGauges('igauges', 'numStrings', onChange, (params['ig'] || []));
     ff.setTuning('tuning','numStrings', onChange, (params['t'] || []));
     $("input[name='units']").filter("[value='"+(params['u']||'in')+"']").click();
     $('#'+params.sl).click();
+    $('#'+params.ns).click();
     $('#'+params.scale).click();
     $('#'+params.o).click();
 };
@@ -273,10 +314,12 @@ $(document).ready(function() {
     $('#numStrings').change(function(){
       ff.setTuning('tuning', 'numStrings', onChange);
       setLengths('ilengths','numStrings', onChange);
+      setGauges('igauges', 'numStrings', onChange);
     });
     $('#worksheet').find('input, textarea').change(onChange);
     ff.setTuning('tuning', 'numStrings', onChange);
     setLengths('ilengths','numStrings', onChange);
+    setGauges('igauges', 'numStrings', onChange);
     paper = Raphael('diagram',200,800);
     updateFormFromHash();
     processChanges = true;
@@ -541,6 +584,25 @@ Fret  P.D.    Fret  P.D.
             (Please note, FretFind will space 
             the remaining strings equally between these two points.)
         </dd>
+        <dt>nut spacing</dt>
+        <dd>
+            <dl id="spacing" class="alternative">
+                <dt id="equal">equal</dt>
+                <dt id="proportional">proportional</dt>
+                <dd>
+                    <dl>
+                        <dt>string gauges:</dt>
+                        <dd id="igauges">
+                        </dd>
+                        <dd class="help">
+                            Enter the thickness of each string, with String 1 being the thinnest/highest. For example, a standard set of electric guitar strings, in inches, would be 0.010, 0.013, 0.017, 0.026, 0.036, 0.046. If you are using metric, please convert your string gauges to metric as well.
+                        </dd>
+                    </dl>
+                </dd>
+                <dd class="help">Proportional nut spacing accounts for the diameter of the strings so that the empty space between each string is the same, rather than simply spacing out the strings evenly from center to center. Note that the outer two strings are still assumed to be centered on their coordinates, i.e. if you enter a nut width of 2" then the outer edges of your outer two strings will be wider than that by half of the sum of their gauges.</dd>
+            </dl>
+        </dd>
+
         <dt>string width at the bridge</dt>
         <dd><input type="text" id="bridgeWidth" value="2.125" /></dd>
         <dd class="help">
