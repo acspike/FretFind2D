@@ -416,12 +416,20 @@ multiple scale lengths and non-parallel frets
 as well as fretboards for instruments that play just or meantone scales.
 </p>
 <div id="fretfind">
-    <dl id="worksheet">
+<div class="fretfind-row">
+   <dl id="worksheet", class="container">
         <dd>units</dd>
         <dd>
-            <label><input type="radio" name="units" value="in" checked="checked"/>inches</label>
-            <label><input type="radio" name="units" value="cm" />centimeters</label>
-            <label><input type="radio" name="units" value="mm" />millimeters</label>
+             <input value="in" class="hidden radio-label" type="radio" name="units" id="inches" checked="checked"/>
+             <label class="button button-label" for="inches">inches</label>
+ 
+             <input value="cm" class="hidden radio-label" type="radio" name="units" id="centimeters"/>
+             <label class="button button-label" for="centimeters">centimeters</label>
+ 
+             <input value="mm" class="hidden radio-label" type="radio" name="units" id="millimeters"/>
+             <label class="button button-label" for="millimeters">millimeters</label>
+ 
+
         </dd>
         <dt>scale length</dt>
         <dd>
@@ -749,6 +757,7 @@ Fret  P.D.    Fret  P.D.
         <dt>Link</dt><dd><a href="#" id="bookmark">Link to this design</a></dd>
     </dl>
     <div id="tables"><!-- --></div>
+</div>
 </div>
 <p class="dev">The latest version in development is available on <a href="https://acspike.github.io/FretFind2D/src/fretfind.html">GitHub</a>.</p>
 <a href="http://github.com/acspike/FretFind2D"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub" /></a>
