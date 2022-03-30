@@ -390,8 +390,7 @@ var ff = (function(){
     
     var getTable = function(guitar) {
         var i = 0;
-        var output = ['<table class="foundfrets">'+
-            '<tr><td colspan="4">Neck</td></tr>'+
+        var output = ['<h3 class="extended">Neck</h3><table class="foundfrets extended">'+
             '<tr><td> </td><td>endpoints</td><td>length</td><td>angle</td></tr>'+
             '<tr><td>Nut</td><td>'+guitar.nut.toString()+'</td><td>'+
             guitar.nut.length()+'</td><td>'+guitar.nut.angle()+'</td></tr>'+
@@ -403,23 +402,29 @@ var ff = (function(){
             guitar.meta[guitar.meta.length-1].length()+'</td><td>'+guitar.meta[guitar.meta.length-1].angle()+'</td></tr>'+
             '<tr><td>Bridge</td><td>'+guitar.bridge.toString()+'</td><td>'+
             guitar.bridge.length()+'</td><td>'+guitar.bridge.angle()+'</td></tr>'+
-            '</table><br /><br />\n'];
-        output.push('<table class="foundfrets">'+
-            '<tr><td colspan="4">Strings</td></tr>'+
+            '</table>\n'];
+        output.push('<h3 class="extended">Strings</h3><table class="foundfrets extended">'+
             '<tr><td> </td><td>endpoints</td><td>length</td><td>angle</td></tr>');
         for (i=0; i<guitar.strings.length; i++) {
             output.push('<tr><td>String ' +(i+1)+'</td><td>'+guitar.strings[i].toString()+'</td><td>'+
             guitar.strings[i].length()+'</td><td>'+guitar.strings[i].angle()+'</td></tr>');
         }
-        output.push('</table><br /><br />\n');
-        output.push('<table class="foundfrets">');
+        output.push('</table>\n');
+
+        //OUTPUT OF THE FRET CALCULATION PER STRING
         for (i=0; i<guitar.frets.length; i++) {
-            output.push('<tr><td colspan="11">String ' +(i+1)+' Frets</td></tr>'+
-                '<tr><td>#</td><td>to nut</td><td>to fret</td><td>to bridge</td>'+
-                '<td>intersection point</td>');
+            if (i >= 1) {
+                output.push('<div class="extended">');
+            } else {
+                output.push('<div>');
+            }
+            output.push('<h3>String ' +(i+1)+' Frets</h3>');
+            output.push('<table class="foundfrets extend-strings">');
+            output.push('<tr><th>#</th><th>to nut</th><th>to fret</th><th>to bridge</th>'+
+                '<th class="extended">intersection point</th>');
             if (guitar.doPartials) {
-                output.push('<td>partial width</td><td>angle</td>'+
-                    '<td>mid to nut</td><td>mid to fret</td><td>mid to bridge</td><td>mid intersection</td>');
+                output.push('<th class="extended">partial width</th><th class="extended">angle</th>'+
+                    '<th class="extended">mid to nut</th><th class="extended">mid to fret</th><th class="extended">mid to bridge</th><th class="extended">mid intersection</th>');
             }
             output.push('</tr>\n');
             for(var j=0; j<guitar.frets[i].length; j++) {
@@ -429,28 +434,28 @@ var ff = (function(){
                 output.push(roundFloat(guitar.frets[i][j].pFretDist, precision));
                 output.push('</td><td>');
                 output.push(roundFloat(guitar.frets[i][j].bridgeDist, precision));
-                output.push('</td><td>');
+                output.push('</td><td class="extended">');
                 output.push(guitar.frets[i][j].intersection.toString());
                 output.push('</td>');
                 if (guitar.doPartials) {
-                  output.push('<td>');
+                  output.push('<td  class="extended">');
                   output.push(roundFloat(guitar.frets[i][j].width, precision));
-                  output.push('</td><td>');
+                  output.push('</td><td  class="extended">');
                   output.push(roundFloat(guitar.frets[i][j].angle, precision));
-                  output.push('</td><td>');
+                  output.push('</td><td  class="extended">');
                   output.push(roundFloat(guitar.frets[i][j].midline_nutDist, precision));
-                  output.push('</td><td>');
+                  output.push('</td><td  class="extended">');
                   output.push(roundFloat(guitar.frets[i][j].midline_pFretDist, precision));
-                  output.push('</td><td>');
+                  output.push('</td><td  class="extended">');
                   output.push(roundFloat(guitar.frets[i][j].midline_bridgeDist, precision));
-                  output.push('</td><td>');
+                  output.push('</td><td  class="extended">');
                   output.push(guitar.frets[i][j].midline_intersection.toString());
                   output.push('</td>');
                 }
                 output.push('</tr>\n');
             }
+            output.push('</table></div>');
         }
-        output.push('</table>');
         return output.join('');
     };
     
@@ -853,12 +858,12 @@ var ff = (function(){
     var initHelp = function(form_id) {
         //create help links for each element in the help class 
         //append to previous sibling dt
-        $('#'+form_id).find('dd.help').prev().prev().
-            append(' [<a class="help" href="#">?</a>]').
-            find('a.help').toggle(
-                function(){$(this).parent().next().next().css('display','block');},
-                function(){$(this).parent().next().next().css('display','none');}
-            );
+        $('.help').parent().
+            append('<span class="toggle-help">?</span>');
+
+            $(".toggle-help").on("click", function(){
+                $(this).parent().toggleClass("helper");
+            });
     };
     var initAlternatives = function(form_id, change_callback) {
         //create alternative switches
@@ -916,3 +921,11 @@ var ff = (function(){
         initAlternatives: initAlternatives
     };
 }());
+
+// Toggle the extended mode
+$(document).ready(function() {
+    $("#extended").on("click", function(){
+        $("body").toggleClass("extended");
+        $("body").toggleClass("simplified");
+    });
+}); 

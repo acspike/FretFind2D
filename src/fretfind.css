@@ -1,52 +1,228 @@
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline}body{line-height:1}button{outline:0}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}q{display:inline;font-style:italic}q:before{content:'"';font-style:normal}q:after{content:'"';font-style:normal}textarea,input[type="text"],input[type="button"],input[type="submit"],input[type="reset"],input[type="search"],input[type="password"]{-webkit-appearance:none;appearance:none;border-radius:0}table{border-collapse:collapse;border-spacing:0}th,td{padding:2px}big{font-size:120%}small,sup,sub{font-size:80%}sup{vertical-align:super}sub{vertical-align:sub}dd{margin-left:20px}kbd,tt{font-size:12px}ins{text-decoration:underline}del,strike,s{text-decoration:line-through}dt{font-weight:bold}address,cite,var{font-style:italic}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+.sticky{}.bypostauthor{}.wp-caption{}.wp-caption-text{}.gallery-caption{}.alignright{}.alignleft{}.aligncenter{}.screen-reader-text{clip:rect(1px, 1px, 1px, 1px);position:absolute !important}
+
+
 body {
+    width: 900px;
+    max-width: 80%;
+    margin: 100px auto;
     background-color:white;
     font-family: Arial,sans-serif;
 }
+
+body * {
+    line-height: normal;
+}
+
+h1 {
+    margin: 40px 0 20px;
+    font-size: 2rem;
+}
+
+h2 {
+    margin: 60px 0 30px;
+    font-size: 1.4rem;
+}
+
+h3 {
+    margin: 10px 0;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+h4 {
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+p, b {
+    margin: 5px 0;
+}
+
+b {
+    font-weight: bold;
+}
+
+th, td {
+    vertical-align: middle;
+    border: 1px solid gray;
+}
+th {
+    font-weight: bold;
+    text-align: left;
+}
 td {
-    vertical-align: top;
     }
-#worksheet {
-    float: left;
+
+label {
+    display: block;
+}
+
+#fretfind input {
+    margin: 10px 0;
+    padding: 8px 13px;
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+#fretfind input[type="radio"] {
+    margin: 10px;
+}
+
+button, .button {
+    display: block;
+    min-width: 150px;
+    margin: 10px 0;
+    padding: 8px 13px;
+    border: 2px solid rgb(63, 93, 224);
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    color: black;
+    text-decoration: none;
+    background: white;
+    line-height: initial;
+    font-size: .8rem;
+    transition: .3s;
+}
+
+button:hover, .button:hover {
+    border: 2px solid rgb(27, 42, 109);
+}
+
+button:active, .button:active {
+    transform: scale(.95);
+}
+
+/* extra styling for radio buttons */
+.button-label {
+    display: inline-block;
+    min-width: auto;
+    color: #292929;
+    background: white;
+    border: 2px solid rgb(223, 223, 223);
+}
+.button-label:hover {
+    border: 2px solid #acacac;
+}
+  
+.radio-label:checked + .button-label {
+    border: 2px solid #30965a;
+}
+.radio-label:checked + .button-label:hover {
+    border: 2px solid #51ce85;
+}
+    
+.hidden {
+    display: none;
+}
+
+
+.fretfind-row {
+    display: flex;
+    justify-content: ;
+}
+
+.container {
+    margin: 20px 10% 20px 0;
+}
+
+#worksheet div, #downloads div {
+    background: #f2f2f2;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 0 10px #0000005c;
+    position: relative;
+    border: 1px solid gray;
+}
+
+#worksheet, #downloads {
     width: 400px;
 }
 #diagram {
-    float: left;
 }
 #downloads {
-	float: left;
 }
 #tables {
-    float: left;
 }
 p.dev {
-    clear: both;
     padding: 1em;
 }
 dt,dd {
-    margin:5px;
+    margin: 0;
+    font-weight: normal;
 }
 dl.alternative > dd {
     display: none;
-	border-left: 2px solid #aaa;
 }
+
 dl.alternative > dt {
-    display: inline;
+    display: inline-block;
+    margin: 0 5px 0 0;
+    padding: 5px;
+    color: rgb(100, 100, 100);
     font-size: 0.8em;
+    border: 1px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
 }
-.selected-alt {
-    text-decoration: underline;
+
+dl.alternative > dt:hover {
+    color: rgb(58, 58, 58);
 }
-dd.help {
-    display: none;
-    font-size: 0.8em;
-    border: 2px dashed red;
+
+dl.alternative .selected-alt {
+    color: black;
+    box-shadow: 0 0 5px rgba(0,0,0,0.25);
+
+}
+
+.help {display: none;}
+
+.helper .help {
+    display: block;
+    font-size: 0.9em;
+    border: 2px dashed #84a5c8;
     padding: 10px;
+    line-height: 1.2;
+    background: #f4f7fb;
 }
+
+.toggle-help {
+    border-radius: 50%;
+    height: 20px;
+    width: 20px;
+    display: inline-block;
+    padding: 0.5px 3px;
+    font-size: 15px;
+    margin: 0 5px;
+    cursor: pointer;
+    font-weight: bold;
+    background: white;
+    color: #84a5c8;
+    border: 2px solid #84a5c8;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+.helper .toggle-help {
+    background: #84a5c8;
+    color: white;
+}
+
 table.foundfrets {
 	border-collapse: collapse;
 }
+
+table.foundfrets tr:nth-of-type(2n+1) {
+    background: rgb(232, 235, 242);
+}
+
 table.foundfrets td {
-	border:1px solid black;padding: 0px 5px 0px 5px;
+	border:1px solid rgb(155, 155, 155);
+    padding: 5px;
 }
 .help dt {
     font-weight: bold;
@@ -54,11 +230,32 @@ table.foundfrets td {
 .help dd {
     padding-left: 10px;
 }
-input {
-    width: 100px;
-}
 .experimental {
   color: red;
   font-weight: bold;
   text-transform: uppercase;
+}
+
+body.extended .extended {
+    display: none;
+}
+
+body.simplified .simplified {
+    display: none;
+}
+
+#extended {
+    width: auto;
+    color: white;
+    background: rgb(18, 105, 18);
+
+}
+
+body.extended #extended {
+    color: black;
+    background: rgb(238, 238, 238);
+}
+
+@media screen and (max-width: 700px) {
+    .fretfind-row {flex-wrap: wrap;}
 }
