@@ -160,6 +160,34 @@ var ff = (function(){
         return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
     };
     
+    function BoundingBox(seg1, seg2) {
+
+        var minX = seg1.end1.x;
+        if(seg1.end2.x < minX) minX = seg1.end2.x;
+        if(seg2.end1.x < minX) minX = seg2.end1.x;
+        if(seg2.end2.x < minX) minX = seg2.end2.x;
+
+        var minY = seg1.end1.y;
+        if(seg1.end2.y < minY) minY = seg1.end2.y;
+        if(seg2.end1.y < minY) minY = seg2.end1.y;
+        if(seg2.end2.y < minY) minY = seg2.end2.y;
+
+        var maxX = seg1.end1.x;
+        if(seg1.end2.x > maxX) maxX = seg1.end2.x;
+        if(seg2.end1.x > maxX) maxX = seg2.end1.x;
+        if(seg2.end2.x > maxX) maxX = seg2.end2.x;
+
+        var maxY = seg1.end1.y;
+        if(seg1.end2.y > maxY) maxY = seg1.end2.y;
+        if(seg2.end1.y > maxY) maxY = seg2.end1.y;
+        if(seg2.end2.y > maxY) maxY = seg2.end2.y;
+
+        this.x = minX;
+        this.y = minY;
+        this.width = maxX - minX;
+        this.height = maxY - minY;
+
+    }
 
     function Scale() {
         // initial step 0 or 1/1 is implicit
@@ -454,7 +482,7 @@ var ff = (function(){
         return output.join('');
     };
     
-    var drawGuitar = function(paper, guitar) {
+    var drawGuitar = function(paper, guitar, displayOptions) {
         var stringstyle = {stroke:'rgb(0,0,0)','stroke-width':'1px'};
         var edgestyle = {stroke:'rgb(0,0,255)','stroke-width':'1px'};
         var metastyle = {stroke:'rgb(221,221,221)','stroke-width':'1px'};
@@ -466,19 +494,23 @@ var ff = (function(){
         
         var all = paper.set();
         
-        var stringpath = '';
-        for (var i=0; i<guitar.strings.length; i++) {
-            stringpath += guitar.strings[i].toSVGD();
+        if(displayOptions.showStrings) {
+            var stringpath = '';
+            for (var i=0; i<guitar.strings.length; i++) {
+                stringpath += guitar.strings[i].toSVGD();
+            }
+            var strings = paper.path(stringpath).attr(stringstyle);
+            all.push(strings);
         }
-        var strings = paper.path(stringpath).attr(stringstyle);
-        all.push(strings);
         
-        var metapath = '';
-        for (var i=0; i<guitar.meta.length; i++) {
-            metapath += guitar.meta[i].toSVGD();
+        if(displayOptions.showMetas) {
+            var metapath = '';
+            for (var i=0; i<guitar.meta.length; i++) {
+                metapath += guitar.meta[i].toSVGD();
+            }
+            var metas = paper.path(metapath).attr(metastyle);
+            all.push(metas);
         }
-        var metas = paper.path(metapath).attr(metastyle);
-        all.push(metas);
         
         var edges = paper.path(guitar.edge1.toSVGD() + guitar.edge2.toSVGD()).attr(edgestyle);
         all.push(edges);
@@ -486,7 +518,37 @@ var ff = (function(){
         var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
+        var bbox = edges.getBBox();
+        
+        // draw a bounding box
+        if(displayOptions.showBoundingBox) {
+            all.push(paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).attr(stringstyle));
+        }
+
         var fretpath = [];
+        
+        if(displayOptions.extendFrets) {
+            for(var j=0; j<guitar.frets[0].length; j++) {
+
+                var leftStart = new Point(0, guitar.frets[0][j].fret.end1.y);
+                var leftEnd = new Point(guitar.frets[0][j].fret.end1.x, guitar.frets[0][j].fret.end1.y);
+                var leftSegment = new Segment(leftStart, leftEnd);
+                fretpath.push(leftSegment.toSVGD());
+                
+            }
+
+            var lastFretIndex = guitar.frets.length - 1;
+            for(var j=0; j<guitar.frets[lastFretIndex].length; j++) {
+
+                var rightStart = new Point(guitar.frets[lastFretIndex][j].fret.end2.x, guitar.frets[lastFretIndex][j].fret.end1.y);
+                var rightEnd = new Point(bbox.width, guitar.frets[lastFretIndex][j].fret.end1.y);
+                var rightSegment = new Segment(rightStart, rightEnd);
+                fretpath.push(rightSegment.toSVGD());
+                
+            }
+        }
+
+
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
                 fretpath.push(guitar.frets[i][j].fret.toSVGD());
@@ -540,6 +602,7 @@ var ff = (function(){
                     '\t.edge{stroke:rgb(0,0,255);stroke-width:0.2%;}\n'+
                     '\t.pfret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.2%;}\n'+
                     '\t.ifret{stroke:rgb(255,0,0);stroke-linecap:round;stroke-width:0.8%;}\n'+
+                    '\t.bbox{stroke:rgb(0,0,0);stroke-width:0.2%;fill:rgba(0,0,0,0)}\n'+
                     ']'+']></style></defs>\n');
         //Output SVG line elements for each string.
         for (var i=0; i<guitar.strings.length; i++) {
@@ -561,6 +624,11 @@ var ff = (function(){
         output.push('<line x1="'+guitar.edge2.end1.x+'" x2="'+guitar.edge2.end2.x+
             '" y1="'+guitar.edge2.end1.y+'" y2="'+guitar.edge2.end2.y,'"'+
             ' class="edge" />\n');
+
+        var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
+        output.push('<rect x="' + bbox.x + '" y="' + bbox.y + '"' +
+            ' width="' + bbox.width + '" height="' + bbox.height + '"' +
+            ' class="bbox" />\n');
 
         //output as SVG path for each fretlet. 
         //using paths because they allow for the linecap style 
@@ -676,6 +744,11 @@ var ff = (function(){
             guitar.edge2.end2.y + margin
             );
 
+
+        // draw a bounding box
+        var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
+        doc.rect(bbox.x + margin, bbox.y + margin, bbox.width, bbox.height);
+
         //Output a line for each fretlet. 
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
@@ -762,6 +835,10 @@ var ff = (function(){
                     guitar.edge2.end2.y - yOffset
                     );
     
+                // draw a bounding box
+                var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
+                pdf.rect(bbox.x - xOffset, bbox.y - yOffset, bbox.width, bbox.height);
+
                 //output a line for each fret on each string
                 for (var k=0; k<guitar.frets.length; k++) {
                     for (var l=0; l<guitar.frets[k].length; l++) {
@@ -809,6 +886,22 @@ var ff = (function(){
         //Output line for each fretboard edge
         output.push(seg2dxf(guitar.edge1));
         output.push(seg2dxf(guitar.edge2));
+
+        //Output bounding box
+        var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
+        var topLeft = new Point(bbox.x, bbox.y);
+        var bottomLeft = new Point(bbox.x, bbox.y+bbox.height);
+        var bottomRight = new Point(bbox.x+bbox.width, bbox.y+bbox.height);
+        var topRight = new Point(bbox.x+bbox.width, bbox.y);
+        var leftSeg = new Segment(topLeft, bottomLeft);
+        var bottomSeg = new Segment(bottomLeft, bottomRight);
+        var rightSeg = new Segment(bottomRight, topRight);
+        var topSeg = new Segment(topRight, topLeft);
+
+        output.push(seg2dxf(leftSeg));
+        output.push(seg2dxf(bottomSeg));
+        output.push(seg2dxf(rightSeg));
+        output.push(seg2dxf(topSeg));
 
         //Output a line for each fretlet. 
         for (var i=0; i<guitar.frets.length; i++) {

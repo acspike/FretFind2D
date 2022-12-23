@@ -85,6 +85,22 @@ var computeOffsets = function(strings, gauges, actual_length, perp_width, spacin
     return offsets;
 };
 
+var getDisplayOptions = function() {
+
+    
+    var showStrings = $("#showStrings").attr("checked");
+    var showMetas = $("#showMetas").attr("checked");
+    var showBoundingBox = $("#showBoundingBox").attr("checked");
+    var extendFrets = $("#extendFrets").attr("checked");
+
+    return {
+        showStrings: showStrings,
+        showMetas: showMetas,
+        showBoundingBox: showBoundingBox,
+        extendFrets: extendFrets
+    };
+    
+}
 
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
@@ -283,8 +299,10 @@ var processChanges = false;
 var onChange = function() {
     if (processChanges) {
         var guitar = getGuitar();
+        var displayOptions = getDisplayOptions();
+        console.log('show bounding box = ' + displayOptions.showBoundingBox);
         guitar = ff.fretGuitar(guitar);
-        ff.drawGuitar(paper, guitar);
+        ff.drawGuitar(paper, guitar, displayOptions);
         $('#tables').html(ff.getTable(guitar));
         $('#bookmark').attr('href', getLink());
     }
@@ -422,6 +440,17 @@ as well as fretboards for instruments that play just or meantone scales.
             <label><input type="radio" name="units" value="in" checked="checked"/>inches</label>
             <label><input type="radio" name="units" value="cm" />centimeters</label>
             <label><input type="radio" name="units" value="mm" />millimeters</label>
+        </dd>
+        <dd>display</dd>
+        <dd>
+            <label><input type="checkbox" name="showStrings" id="showStrings" checked="checked">show strings</label><br />
+            <label><input type="checkbox" name="showMetas" id="showMetas" checked="checked">show metas</label><br />
+            <label><input type="checkbox" name="showBoundingBox" id="showBoundingBox" />bounding box</label><br />
+            <label><input type="checkbox" name="extendFrets" id="extendFrets" />extend frets to edge</label>
+        </dd>
+        <dd class="help">
+            Selecting or deselecting any of these options will only affect the display and output files.
+            No fret
         </dd>
         <dt>scale length</dt>
         <dd>
