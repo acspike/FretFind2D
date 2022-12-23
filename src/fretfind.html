@@ -359,8 +359,9 @@ $(document).ready(function() {
     
         dl.append('<dt>PDF (multi-page)</dt>' +
             '<dd>' +
-                '<label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label>' +
-                '<label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label>' +
+                '<label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label><br />' +
+                '<label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label><br />' +
+                '<label><input type="radio" name="pdfm_pagesize" value="legal" />legal</label>' +
             '</dd>' +
             '<dd><button id="download_pdfm">Download</button></dd>');
         $('#download_pdfm').click(function(){

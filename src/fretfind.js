@@ -813,7 +813,12 @@ var ff = (function(){
         if (pagesize === 'a4') {
             var rawPageWidth = 210 / 25.4;
             var rawPageHeight = 297 / 25.4;
-        } else {
+        }
+        else if(pagesize === 'legal') {
+            var rawPageWidth = 8.5;
+            var rawPageHeight = 14;
+        }
+        else {
             pagesize = 'letter';
             var rawPageWidth = 8.5;
             var rawPageHeight = 11;
