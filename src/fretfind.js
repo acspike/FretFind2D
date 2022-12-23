@@ -320,6 +320,8 @@ var ff = (function(){
         }
         //var intersection = nut.intersect(bridge);
 
+        console.log("partials: " + doPartials + ", parallel: " + parallelFrets);
+
         // an array of fretlets for each string
         var strings = [];
         var tones = guitar.scale.steps.length - 1;
@@ -406,6 +408,26 @@ var ff = (function(){
             }
             strings.push(frets);
         }
+
+        var extendedFretEnds = [];
+        if(parallelFrets) {
+            
+            for(var j=0; j<strings[0].length; j++) {
+                var leftStart = new Point(0, strings[0][j].fret.end1.y);
+                var leftEnd = new Point(strings[0][j].fret.end1.x, strings[0][j].fret.end1.y);
+                extendedFretEnds.push(new Segment(leftStart, leftEnd));
+            }
+
+            var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
+            var lastFretIndex = strings.length - 1;
+            for(var j=0; j<strings[lastFretIndex].length; j++) {
+                var rightStart = new Point(strings[lastFretIndex][j].fret.end2.x, strings[lastFretIndex][j].fret.end1.y);
+                var rightEnd = new Point(endX, strings[lastFretIndex][j].fret.end1.y);
+                extendedFretEnds.push(new Segment(rightStart, rightEnd));
+            }
+
+        }
+
         guitar.frets = strings;
         guitar.fretWidths = totalWidth;
         guitar.midline = midline;
@@ -413,6 +435,7 @@ var ff = (function(){
         guitar.bridge = bridge;
         guitar.meta = meta;
         guitar.doPartials = doPartials;
+        guitar.extendedFretEnds = extendedFretEnds;
         return guitar;
     }
     
@@ -526,36 +549,21 @@ var ff = (function(){
         }
 
         var fretpath = [];
-        
-        if(displayOptions.extendFrets) {
-            for(var j=0; j<guitar.frets[0].length; j++) {
-
-                var leftStart = new Point(0, guitar.frets[0][j].fret.end1.y);
-                var leftEnd = new Point(guitar.frets[0][j].fret.end1.x, guitar.frets[0][j].fret.end1.y);
-                var leftSegment = new Segment(leftStart, leftEnd);
-                fretpath.push(leftSegment.toSVGD());
-                
-            }
-
-            var lastFretIndex = guitar.frets.length - 1;
-            for(var j=0; j<guitar.frets[lastFretIndex].length; j++) {
-
-                var rightStart = new Point(guitar.frets[lastFretIndex][j].fret.end2.x, guitar.frets[lastFretIndex][j].fret.end1.y);
-                var rightEnd = new Point(bbox.width, guitar.frets[lastFretIndex][j].fret.end1.y);
-                var rightSegment = new Segment(rightStart, rightEnd);
-                fretpath.push(rightSegment.toSVGD());
-                
-            }
-        }
-
-
         for (var i=0; i<guitar.frets.length; i++) {
             for (var j=0; j<guitar.frets[i].length; j++) {
                 fretpath.push(guitar.frets[i][j].fret.toSVGD());
             }
         }
+
+        if(displayOptions.extendFrets) {
+            for(var j=0; j<guitar.extendedFretEnds.length; j++) {
+                fretpath.push(guitar.extendedFretEnds[j].toSVGD());
+            }
+        }
+
         var frets = paper.path(fretpath.join('')).attr(fretstyle);
         all.push(frets);
+
         
         // calculate scale
         var gw = edges.getBBox().width;
@@ -647,6 +655,14 @@ var ff = (function(){
                 output.push('<path d="'+guitar.frets[i][j].fret.toSVGD()+'" class="'+fret_class+'" />\n');
             }
         }
+
+        if(displayOptions.extendFrets) {
+            for (var i=0; i<guitar.extendedFretEnds.length; i++) {
+                output.push('<path d="'+guitar.extendedFretEnds[i].toSVGD()+'" class="'+fret_class+'" />\n');
+            }
+        }
+
+
         output.push('</svg>');
         return output.join('');
     };
@@ -776,6 +792,17 @@ var ff = (function(){
             }
         }
 
+        
+        if(displayOptions.extendFrets) {
+            for (var i=0; i<guitar.extendedFretEnds.length; i++) {
+                doc.line(
+                    guitar.extendedFretEnds[i].end1.x + intersect + margin,
+                    guitar.extendedFretEnds[i].end1.y + margin,
+                    guitar.extendedFretEnds[i].end2.x - intersect + margin,
+                    guitar.extendedFretEnds[i].end2.y + margin);
+            }
+        }
+
         return doc.output();
     };
     
@@ -871,6 +898,17 @@ var ff = (function(){
                             );
                     }
                 }
+                
+                if(displayOptions.extendFrets) {
+                    for (var k=0; k<guitar.extendedFretEnds.length; k++) {
+                        pdf.line(
+                            guitar.extendedFretEnds[k].end1.x + intersect - xOffset,
+                            guitar.extendedFretEnds[k].end1.y - yOffset,
+                            guitar.extendedFretEnds[k].end2.x - intersect - xOffset,
+                            guitar.extendedFretEnds[k].end2.y - yOffset);
+                    }
+                }
+
             }
         }
         return pdf.output();
@@ -934,6 +972,13 @@ var ff = (function(){
                 output.push(seg2dxf(guitar.frets[i][j].fret,true));
             }
         }
+
+        if(displayOptions.extendFrets) {
+            for (var i=0; i<guitar.extendedFretEnds.length; i++) {
+                output.push(seg2dxf(guitar.extendedFretEnds[i],true));
+            }
+        }
+
         output.push('0\nENDSEC\n0\nEOF\n');
         
         return output.join('');
