@@ -299,10 +299,8 @@ var processChanges = false;
 var onChange = function() {
     if (processChanges) {
         var guitar = getGuitar();
-        var displayOptions = getDisplayOptions();
-        console.log('show bounding box = ' + displayOptions.showBoundingBox);
         guitar = ff.fretGuitar(guitar);
-        ff.drawGuitar(paper, guitar, displayOptions);
+        ff.drawGuitar(paper, guitar, getDisplayOptions());
         $('#tables').html(ff.getTable(guitar));
         $('#bookmark').attr('href', getLink());
     }
@@ -355,7 +353,7 @@ $(document).ready(function() {
         $('#download_dxf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getDXF(guitar)], {type: "image/vnd.dxf"});
+            var blob = new Blob([ff.getDXF(guitar, getDisplayOptions())], {type: "image/vnd.dxf"});
             saveAs(blob, "fretboard.dxf");
         });
     
@@ -369,7 +367,7 @@ $(document).ready(function() {
             var guitar = getGuitar();
             var pagesize = $("input:checked[name='pdfm_pagesize']").val();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getPDFMultipage(guitar, pagesize)], {type: "application/pdf"});
+            var blob = new Blob([ff.getPDFMultipage(guitar, getDisplayOptions(), pagesize)], {type: "application/pdf"});
             saveAs(blob, "fretboard.pdf");
         });
         
@@ -377,7 +375,7 @@ $(document).ready(function() {
         $('#download_pdf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getPDF(guitar)], {type: "application/pdf"});
+            var blob = new Blob([ff.getPDF(guitar, getDisplayOptions())], {type: "application/pdf"});
             saveAs(blob, "fretboard.pdf");
         });
         
@@ -385,7 +383,7 @@ $(document).ready(function() {
         $('#download_svg').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getSVG(guitar)], {type: "image/svg+xml"});
+            var blob = new Blob([ff.getSVG(guitar, getDisplayOptions())], {type: "image/svg+xml"});
             saveAs(blob, "fretboard.svg");
         });
         
