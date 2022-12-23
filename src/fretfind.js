@@ -160,35 +160,6 @@ var ff = (function(){
         return 'M' + this.end1.x + ' ' + this.end1.y + 'L' + this.end2.x + ' ' + this.end2.y;
     };
     
-    function BoundingBox(seg1, seg2) {
-
-        var minX = seg1.end1.x;
-        if(seg1.end2.x < minX) minX = seg1.end2.x;
-        if(seg2.end1.x < minX) minX = seg2.end1.x;
-        if(seg2.end2.x < minX) minX = seg2.end2.x;
-
-        var minY = seg1.end1.y;
-        if(seg1.end2.y < minY) minY = seg1.end2.y;
-        if(seg2.end1.y < minY) minY = seg2.end1.y;
-        if(seg2.end2.y < minY) minY = seg2.end2.y;
-
-        var maxX = seg1.end1.x;
-        if(seg1.end2.x > maxX) maxX = seg1.end2.x;
-        if(seg2.end1.x > maxX) maxX = seg2.end1.x;
-        if(seg2.end2.x > maxX) maxX = seg2.end2.x;
-
-        var maxY = seg1.end1.y;
-        if(seg1.end2.y > maxY) maxY = seg1.end2.y;
-        if(seg2.end1.y > maxY) maxY = seg2.end1.y;
-        if(seg2.end2.y > maxY) maxY = seg2.end2.y;
-
-        this.x = minX;
-        this.y = minY;
-        this.width = maxX - minX;
-        this.height = maxY - minY;
-
-    }
-
     function Scale() {
         // initial step 0 or 1/1 is implicit
         this.steps = [[1,1]];
@@ -541,11 +512,11 @@ var ff = (function(){
         var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
-        var bbox = edges.getBBox();
+        var bbox = getExtents(guitar); //edges.getBBox();
         
         // draw a bounding box
         if(displayOptions.showBoundingBox) {
-            all.push(paper.rect(bbox.x, bbox.y, bbox.width, bbox.height).attr(stringstyle));
+            all.push(paper.rect(bbox.minx, bbox.miny, bbox.width, bbox.height).attr(stringstyle));
         }
 
         var fretpath = [];
@@ -641,8 +612,8 @@ var ff = (function(){
             ' class="edge" />\n');
 
         if(displayOptions.showBoundingBox) {
-            var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
-            output.push('<rect x="' + bbox.x + '" y="' + bbox.y + '"' +
+            var bbox = getExtents(guitar); // new BoundingBox(guitar.edge1, guitar.edge2);
+            output.push('<rect x="' + bbox.minx + '" y="' + bbox.miny + '"' +
                 ' width="' + bbox.width + '" height="' + bbox.height + '"' +
                 ' class="bbox" />\n');
         }
@@ -776,8 +747,8 @@ var ff = (function(){
 
         if(displayOptions.showBoundingBox) {
             // draw a bounding box
-            var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
-            doc.rect(bbox.x + margin, bbox.y + margin, bbox.width, bbox.height);
+            var bbox = getExtents(guitar); //new BoundingBox(guitar.edge1, guitar.edge2);
+            doc.rect(bbox.minx + margin, bbox.miny + margin, bbox.width, bbox.height);
         }
 
         //Output a line for each fretlet. 
@@ -888,8 +859,8 @@ var ff = (function(){
     
                 if(displayOptions.showBoundingBox) {
                     // draw a bounding box
-                    var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
-                    pdf.rect(bbox.x - xOffset, bbox.y - yOffset, bbox.width, bbox.height);
+                    var bbox = getExtents(guitar); //new BoundingBox(guitar.edge1, guitar.edge2);
+                    pdf.rect(bbox.minx - xOffset, bbox.miny - yOffset, bbox.width, bbox.height);
                 }
 
                 //output a line for each fret on each string
@@ -955,11 +926,11 @@ var ff = (function(){
 
         if(displayOptions.showBoundingBox) {
             //Output bounding box
-            var bbox = new BoundingBox(guitar.edge1, guitar.edge2);
-            var topLeft = new Point(bbox.x, bbox.y);
-            var bottomLeft = new Point(bbox.x, bbox.y+bbox.height);
-            var bottomRight = new Point(bbox.x+bbox.width, bbox.y+bbox.height);
-            var topRight = new Point(bbox.x+bbox.width, bbox.y);
+            var bbox = getExtents(guitar); //new BoundingBox(guitar.edge1, guitar.edge2);
+            var topLeft = new Point(bbox.minx, bbox.miny);
+            var bottomLeft = new Point(bbox.minx, bbox.miny+bbox.height);
+            var bottomRight = new Point(bbox.minx+bbox.width, bbox.miny+bbox.height);
+            var topRight = new Point(bbox.minx+bbox.width, bbox.miny);
             var leftSeg = new Segment(topLeft, bottomLeft);
             var bottomSeg = new Segment(bottomLeft, bottomRight);
             var rightSeg = new Segment(bottomRight, topRight);
