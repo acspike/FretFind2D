@@ -383,20 +383,44 @@ var ff = (function(){
         var extendedFretEnds = [];
         if(parallelFrets) {
             
-            for(var j=0; j<strings[0].length; j++) {
+            var lastFretIndex = strings.length - 1;
+            var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
+            for(var j=0; j<guitar.fret_count; j++) {
+
                 var leftStart = new Point(0, strings[0][j].fret.end1.y);
                 var leftEnd = new Point(strings[0][j].fret.end1.x, strings[0][j].fret.end1.y);
                 extendedFretEnds.push(new Segment(leftStart, leftEnd));
-            }
-
-            var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
-            var lastFretIndex = strings.length - 1;
-            for(var j=0; j<strings[lastFretIndex].length; j++) {
+                
                 var rightStart = new Point(strings[lastFretIndex][j].fret.end2.x, strings[lastFretIndex][j].fret.end1.y);
                 var rightEnd = new Point(endX, strings[lastFretIndex][j].fret.end1.y);
                 extendedFretEnds.push(new Segment(rightStart, rightEnd));
+
             }
 
+        }
+        else {
+            
+            var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
+            for(var j=0; j<=guitar.fret_count; j++) {
+
+                var firstPoint = strings[strings.length-1][j].fret.end2;
+                var lastPoint = strings[0][j].fret.end1;
+
+                var slope = (lastPoint.y - firstPoint.y) / (lastPoint.x - firstPoint.x);
+                if(Math.abs(slope) < threshold) {
+                    slope = 0;
+                }
+
+                var b = firstPoint.y - slope * firstPoint.x;
+
+                var leftPoint = new Point(0, b);
+                extendedFretEnds.push(new Segment(leftPoint, firstPoint));
+                
+                var rightPoint = new Point(endX, slope * endX + b);
+                extendedFretEnds.push(new Segment(lastPoint, rightPoint));
+
+            }
+            
         }
 
         guitar.frets = strings;

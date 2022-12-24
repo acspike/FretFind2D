@@ -85,9 +85,9 @@ var computeOffsets = function(strings, gauges, actual_length, perp_width, spacin
     return offsets;
 };
 
+// get the user-selected display options for on-screen display and all output options (i.e. SVG, PDF).
 var getDisplayOptions = function() {
 
-    
     var showStrings = $("#showStrings").attr("checked");
     var showMetas = $("#showMetas").attr("checked");
     var showBoundingBox = $("#showBoundingBox").attr("checked");
