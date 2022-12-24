@@ -545,13 +545,6 @@ var ff = (function(){
         var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
-        
-        // draw a bounding box
-        if(displayOptions.showBoundingBox) {
-            var bbox = getExtents(guitar);
-            all.push(paper.rect(bbox.minx, bbox.miny, bbox.width, bbox.height).attr(stringstyle));
-        }
-
         if(displayOptions.showFrets) {
             var fretpath = [];
             for (var i=0; i<guitar.frets.length; i++) {
@@ -570,6 +563,11 @@ var ff = (function(){
             }
             var extendedFrets = paper.path(extendedFretsPath.join('')).attr(fretstyle);
             all.push(extendedFrets);
+        }
+
+        if(displayOptions.showBoundingBox) {
+            var bbox = getExtents(guitar);
+            all.push(paper.rect(bbox.minx, bbox.miny, bbox.width, bbox.height).attr(stringstyle));
         }
 
         // calculate scale
