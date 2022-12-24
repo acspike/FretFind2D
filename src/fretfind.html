@@ -92,7 +92,6 @@ var getDisplayOptions = function() {
     var showFretboardEdges = $("#showFretboardEdges").attr("checked");
     var showMetas = $("#showMetas").attr("checked");
     var showBoundingBox = $("#showBoundingBox").attr("checked");
-    var showFrets = $("#showFrets").attr("checked");
     var extendFrets = $("#extendFrets").attr("checked");
 
     return {
@@ -100,7 +99,6 @@ var getDisplayOptions = function() {
         showFretboardEdges: showFretboardEdges,
         showMetas: showMetas,
         showBoundingBox: showBoundingBox,
-        showFrets: showFrets,
         extendFrets: extendFrets
     };
     
@@ -448,7 +446,6 @@ as well as fretboards for instruments that play just or meantone scales.
         <dd>
             <label><input type="checkbox" name="showFretboardEdges" id="showFretboardEdges" checked="checked" />show fretboard edges</label><br />
             <label><input type="checkbox" name="showStrings" id="showStrings" checked="checked" />show strings</label><br />
-            <label><input type="checkbox" name="showFrets" id="showFrets" checked="checked" />show frets</label><br />
             <label><input type="checkbox" name="extendFrets" id="extendFrets" />extend frets to edge</label><br />
             <label><input type="checkbox" name="showBoundingBox" id="showBoundingBox" />bounding box</label><br />
             <label><input type="checkbox" name="showMetas" id="showMetas" checked="checked" />show metas</label>

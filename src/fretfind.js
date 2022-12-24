@@ -385,7 +385,7 @@ var ff = (function(){
 
             var lastFretIndex = strings.length - 1;
             var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
-            for(var j=0; j<guitar.fret_count; j++) {
+            for(var j=0; j<=guitar.fret_count; j++) {
 
                 var leftStart = new Point(0, strings[0][j].fret.end1.y);
                 var leftEnd = new Point(strings[0][j].fret.end1.x, strings[0][j].fret.end1.y);
@@ -545,16 +545,14 @@ var ff = (function(){
         var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
-        if(displayOptions.showFrets) {
-            var fretpath = [];
-            for (var i=0; i<guitar.frets.length; i++) {
-                for (var j=0; j<guitar.frets[i].length; j++) {
-                    fretpath.push(guitar.frets[i][j].fret.toSVGD());
-                }
+        var fretpath = [];
+        for (var i=0; i<guitar.frets.length; i++) {
+            for (var j=0; j<guitar.frets[i].length; j++) {
+                fretpath.push(guitar.frets[i][j].fret.toSVGD());
             }
-            var frets = paper.path(fretpath.join('')).attr(fretstyle);
-            all.push(frets);
         }
+        var frets = paper.path(fretpath.join('')).attr(fretstyle);
+        all.push(frets);
 
         if(displayOptions.extendFrets) {
             var extendedFretsPath = [];
@@ -637,13 +635,15 @@ var ff = (function(){
             }
         }
 
-        //Output SVG line elements for each fretboard edge
-        output.push('<line x1="'+guitar.edge1.end1.x+'" x2="'+guitar.edge1.end2.x+
-            '" y1="'+guitar.edge1.end1.y+'" y2="'+guitar.edge1.end2.y,'"'+
-            ' class="edge" />\n');
-        output.push('<line x1="'+guitar.edge2.end1.x+'" x2="'+guitar.edge2.end2.x+
-            '" y1="'+guitar.edge2.end1.y+'" y2="'+guitar.edge2.end2.y,'"'+
-            ' class="edge" />\n');
+        if(displayOptions.showFretboardEdges) {
+            //Output SVG line elements for each fretboard edge
+            output.push('<line x1="'+guitar.edge1.end1.x+'" x2="'+guitar.edge1.end2.x+
+                '" y1="'+guitar.edge1.end1.y+'" y2="'+guitar.edge1.end2.y,'"'+
+                ' class="edge" />\n');
+            output.push('<line x1="'+guitar.edge2.end1.x+'" x2="'+guitar.edge2.end2.x+
+                '" y1="'+guitar.edge2.end1.y+'" y2="'+guitar.edge2.end2.y,'"'+
+                ' class="edge" />\n');
+        }
 
         if(displayOptions.showBoundingBox) {
             var bbox = getExtents(guitar); // new BoundingBox(guitar.edge1, guitar.edge2);
@@ -764,19 +764,21 @@ var ff = (function(){
             }
         }
         
-        //Output line for each fretboard edge
-        doc.line(
-            guitar.edge1.end1.x + margin, 
-            guitar.edge1.end1.y + margin, 
-            guitar.edge1.end2.x + margin, 
-            guitar.edge1.end2.y + margin
-            );
-        doc.line(
-            guitar.edge2.end1.x + margin, 
-            guitar.edge2.end1.y + margin, 
-            guitar.edge2.end2.x + margin, 
-            guitar.edge2.end2.y + margin
-            );
+        if(displayOptions.showFretboardEdges) {
+            //Output line for each fretboard edge
+            doc.line(
+                guitar.edge1.end1.x + margin, 
+                guitar.edge1.end1.y + margin, 
+                guitar.edge1.end2.x + margin, 
+                guitar.edge1.end2.y + margin
+                );
+            doc.line(
+                guitar.edge2.end1.x + margin, 
+                guitar.edge2.end1.y + margin, 
+                guitar.edge2.end2.x + margin, 
+                guitar.edge2.end2.y + margin
+                );
+        }
 
 
         if(displayOptions.showBoundingBox) {
@@ -877,19 +879,21 @@ var ff = (function(){
                     }
                 }
     
-                //output a line for each fretboard edge
-                pdf.line(
-                    guitar.edge1.end1.x - xOffset,
-                    guitar.edge1.end1.y - yOffset,
-                    guitar.edge1.end2.x - xOffset,
-                    guitar.edge1.end2.y - yOffset
-                    );
-                pdf.line(
-                    guitar.edge2.end1.x - xOffset,
-                    guitar.edge2.end1.y - yOffset,
-                    guitar.edge2.end2.x - xOffset,
-                    guitar.edge2.end2.y - yOffset
-                    );
+                if(displayOptions.showFretboardEdges) {
+                    //output a line for each fretboard edge
+                    pdf.line(
+                        guitar.edge1.end1.x - xOffset,
+                        guitar.edge1.end1.y - yOffset,
+                        guitar.edge1.end2.x - xOffset,
+                        guitar.edge1.end2.y - yOffset
+                        );
+                    pdf.line(
+                        guitar.edge2.end1.x - xOffset,
+                        guitar.edge2.end1.y - yOffset,
+                        guitar.edge2.end2.x - xOffset,
+                        guitar.edge2.end2.y - yOffset
+                        );
+                }
     
                 if(displayOptions.showBoundingBox) {
                     // draw a bounding box
@@ -954,9 +958,11 @@ var ff = (function(){
             }
         }
         
-        //Output line for each fretboard edge
-        output.push(seg2dxf(guitar.edge1));
-        output.push(seg2dxf(guitar.edge2));
+        if(displayOptions.showFretboardEdges) {
+            //Output line for each fretboard edge
+            output.push(seg2dxf(guitar.edge1));
+            output.push(seg2dxf(guitar.edge2));
+        }
 
         if(displayOptions.showBoundingBox) {
             //Output bounding box
