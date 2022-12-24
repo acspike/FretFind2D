@@ -382,7 +382,7 @@ var ff = (function(){
 
         var extendedFretEnds = [];
         if(parallelFrets) {
-            
+
             var lastFretIndex = strings.length - 1;
             var endX = Math.abs(guitar.edge2.end2.x - guitar.edge1.end2.x);
             for(var j=0; j<guitar.fret_count; j++) {
@@ -410,14 +410,21 @@ var ff = (function(){
                 if(Math.abs(slope) < threshold) {
                     slope = 0;
                 }
-
                 var b = firstPoint.y - slope * firstPoint.x;
 
                 var leftPoint = new Point(0, b);
-                extendedFretEnds.push(new Segment(leftPoint, firstPoint));
-                
                 var rightPoint = new Point(endX, slope * endX + b);
-                extendedFretEnds.push(new Segment(lastPoint, rightPoint));
+
+                if(doPartials) {
+                    // multiple scale
+                    extendedFretEnds.push(new Segment(leftPoint, firstPoint));
+                    extendedFretEnds.push(new Segment(lastPoint, rightPoint));
+                }
+                else {
+                    // individual scale
+                    extendedFretEnds.push(new Segment(leftPoint, leftPoint));
+                    extendedFretEnds.push(new Segment(rightPoint, rightPoint));
+                }
 
             }
             
@@ -530,39 +537,44 @@ var ff = (function(){
             all.push(metas);
         }
         
-        var edges = paper.path(guitar.edge1.toSVGD() + guitar.edge2.toSVGD()).attr(edgestyle);
-        all.push(edges);
+        if(displayOptions.showFretboardEdges) {
+            var edges = paper.path(guitar.edge1.toSVGD() + guitar.edge2.toSVGD()).attr(edgestyle);
+            all.push(edges);
+        }
         
         var ends = paper.path(guitar.nut.toSVGD() + guitar.bridge.toSVGD()).attr(pfretstyle);
         all.push(ends);
         
-        var bbox = getExtents(guitar); //edges.getBBox();
         
         // draw a bounding box
         if(displayOptions.showBoundingBox) {
+            var bbox = getExtents(guitar);
             all.push(paper.rect(bbox.minx, bbox.miny, bbox.width, bbox.height).attr(stringstyle));
         }
 
-        var fretpath = [];
-        for (var i=0; i<guitar.frets.length; i++) {
-            for (var j=0; j<guitar.frets[i].length; j++) {
-                fretpath.push(guitar.frets[i][j].fret.toSVGD());
+        if(displayOptions.showFrets) {
+            var fretpath = [];
+            for (var i=0; i<guitar.frets.length; i++) {
+                for (var j=0; j<guitar.frets[i].length; j++) {
+                    fretpath.push(guitar.frets[i][j].fret.toSVGD());
+                }
             }
+            var frets = paper.path(fretpath.join('')).attr(fretstyle);
+            all.push(frets);
         }
 
         if(displayOptions.extendFrets) {
+            var extendedFretsPath = [];
             for(var j=0; j<guitar.extendedFretEnds.length; j++) {
-                fretpath.push(guitar.extendedFretEnds[j].toSVGD());
+                extendedFretsPath.push(guitar.extendedFretEnds[j].toSVGD());
             }
+            var extendedFrets = paper.path(extendedFretsPath.join('')).attr(fretstyle);
+            all.push(extendedFrets);
         }
 
-        var frets = paper.path(fretpath.join('')).attr(fretstyle);
-        all.push(frets);
-
-        
         // calculate scale
-        var gw = edges.getBBox().width;
-        var gh = edges.getBBox().height;
+        var gw = getExtents(guitar).width;
+        var gh = getExtents(guitar).height;
         var pw = parseInt(paper.canvas.style.width) || paper.width;
         var ph = parseInt(paper.canvas.style.height) || paper.height;
         var scale = Math.min(pw/gw,ph/gh);
