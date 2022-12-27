@@ -85,6 +85,24 @@ var computeOffsets = function(strings, gauges, actual_length, perp_width, spacin
     return offsets;
 };
 
+// get the user-selected display options for on-screen display and all output options (i.e. SVG, PDF).
+var getDisplayOptions = function() {
+
+    var showStrings = $("#showStrings").attr("checked");
+    var showFretboardEdges = $("#showFretboardEdges").attr("checked");
+    var showMetas = $("#showMetas").attr("checked");
+    var showBoundingBox = $("#showBoundingBox").attr("checked");
+    var extendFrets = $("#extendFrets").attr("checked");
+
+    return {
+        showStrings: showStrings,
+        showFretboardEdges: showFretboardEdges,
+        showMetas: showMetas,
+        showBoundingBox: showBoundingBox,
+        extendFrets: extendFrets
+    };
+    
+}
 
 // output a guitar (scale, tuning and strings (with fretboard edges))
 // based upon form values
@@ -284,7 +302,7 @@ var onChange = function() {
     if (processChanges) {
         var guitar = getGuitar();
         guitar = ff.fretGuitar(guitar);
-        ff.drawGuitar(paper, guitar);
+        ff.drawGuitar(paper, guitar, getDisplayOptions());
         $('#tables').html(ff.getTable(guitar));
         $('#bookmark').attr('href', getLink());
     }
@@ -337,21 +355,22 @@ $(document).ready(function() {
         $('#download_dxf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getDXF(guitar)], {type: "image/vnd.dxf"});
+            var blob = new Blob([ff.getDXF(guitar, getDisplayOptions())], {type: "image/vnd.dxf"});
             saveAs(blob, "fretboard.dxf");
         });
     
         dl.append('<dt>PDF (multi-page)</dt>' +
             '<dd>' +
-                '<label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label>' +
-                '<label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label>' +
+                '<label><input type="radio" name="pdfm_pagesize" value="letter" checked="checked"/>letter</label><br />' +
+                '<label><input type="radio" name="pdfm_pagesize" value="a4" />A4</label><br />' +
+                '<label><input type="radio" name="pdfm_pagesize" value="legal" />legal</label>' +
             '</dd>' +
             '<dd><button id="download_pdfm">Download</button></dd>');
         $('#download_pdfm').click(function(){
             var guitar = getGuitar();
             var pagesize = $("input:checked[name='pdfm_pagesize']").val();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getPDFMultipage(guitar, pagesize)], {type: "application/pdf"});
+            var blob = new Blob([ff.getPDFMultipage(guitar, getDisplayOptions(), pagesize)], {type: "application/pdf"});
             saveAs(blob, "fretboard.pdf");
         });
         
@@ -359,7 +378,7 @@ $(document).ready(function() {
         $('#download_pdf').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getPDF(guitar)], {type: "application/pdf"});
+            var blob = new Blob([ff.getPDF(guitar, getDisplayOptions())], {type: "application/pdf"});
             saveAs(blob, "fretboard.pdf");
         });
         
@@ -367,7 +386,7 @@ $(document).ready(function() {
         $('#download_svg').click(function(){
             var guitar = getGuitar();
             guitar = ff.fretGuitar(guitar);
-            var blob = new Blob([ff.getSVG(guitar)], {type: "image/svg+xml"});
+            var blob = new Blob([ff.getSVG(guitar, getDisplayOptions())], {type: "image/svg+xml"});
             saveAs(blob, "fretboard.svg");
         });
         
@@ -419,9 +438,21 @@ as well as fretboards for instruments that play just or meantone scales.
     <dl id="worksheet">
         <dd>units</dd>
         <dd>
-            <label><input type="radio" name="units" value="in" checked="checked"/>inches</label>
-            <label><input type="radio" name="units" value="cm" />centimeters</label>
+            <label><input type="radio" name="units" value="in" checked="checked"/>inches</label><br />
+            <label><input type="radio" name="units" value="cm" />centimeters</label><br />
             <label><input type="radio" name="units" value="mm" />millimeters</label>
+        </dd>
+        <dd>display</dd>
+        <dd>
+            <label><input type="checkbox" name="showFretboardEdges" id="showFretboardEdges" checked="checked" />show fretboard edges</label><br />
+            <label><input type="checkbox" name="showStrings" id="showStrings" checked="checked" />show strings</label><br />
+            <label><input type="checkbox" name="extendFrets" id="extendFrets" />extend frets to edge</label><br />
+            <label><input type="checkbox" name="showBoundingBox" id="showBoundingBox" />bounding box</label><br />
+            <label><input type="checkbox" name="showMetas" id="showMetas" checked="checked" />show metas</label>
+        </dd>
+        <dd class="help">
+            Selecting or deselecting any of these options will only affect the display and output files.
+            No fret calculations will be affected.
         </dd>
         <dt>scale length</dt>
         <dd>

@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  php-apache-environment:
+    container_name: FretFind2D-php-apache
+    image: php:8.0-apache
+    volumes:
+      - ../src:/var/www/html/
+    ports:
+      - 8000:80
