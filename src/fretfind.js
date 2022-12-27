@@ -644,7 +644,7 @@ var ff = (function(){
         }
 
         if(displayOptions.showBoundingBox) {
-            var bbox = getExtents(guitar); // new BoundingBox(guitar.edge1, guitar.edge2);
+            var bbox = getExtents(guitar);
             output.push('<rect x="' + bbox.minx + '" y="' + bbox.miny + '"' +
                 ' width="' + bbox.width + '" height="' + bbox.height + '"' +
                 ' class="bbox" />\n');
@@ -895,7 +895,7 @@ var ff = (function(){
     
                 if(displayOptions.showBoundingBox) {
                     // draw a bounding box
-                    var bbox = getExtents(guitar); //new BoundingBox(guitar.edge1, guitar.edge2);
+                    var bbox = getExtents(guitar);
                     pdf.rect(bbox.minx - xOffset, bbox.miny - yOffset, bbox.width, bbox.height);
                 }
 
