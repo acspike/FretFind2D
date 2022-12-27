@@ -291,8 +291,6 @@ var ff = (function(){
         }
         //var intersection = nut.intersect(bridge);
 
-        console.log("partials: " + doPartials + ", parallel: " + parallelFrets);
-
         // an array of fretlets for each string
         var strings = [];
         var tones = guitar.scale.steps.length - 1;
